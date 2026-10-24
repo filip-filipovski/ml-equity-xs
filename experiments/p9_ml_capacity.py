@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """P9: ML capacity, learning curves, leakage controls on the study-13/14 TRAIN panel.
 
-Design (binding): reports/ml_meeting/P9_PREDECLARATION.md (v2) and REDTEAM_P9.md.
+Design (binding): docs/P9_PREDECLARATION.md (v2) and the independent red team.
 Machinery reused, unmodified: eqxs.equity_ml (splitter, models, nulls) and
 eqxs.equity_ml_grid (tie-safe IC, fixed boosters, assert_nondegenerate, decile L/S with per-side
-costs).  TRAIN only: the panel is read through reports/ml_meeting/_train_loader.py; sealed_load_count 0.
+costs).  TRAIN only: the panel is read through experiments/_train_loader.py; sealed_load_count 0.
 
-Subcommands (each independently resumable, each writes reports/ml_meeting/p9_<e>.json):
+Subcommands (each independently resumable, each writes results/p9_<e>.json):
     e1 [--models M1,M2,M3] [--parts a,b,c,d,e]   leakage / integrity controls
     e2                                            learning curve
     e3 [--parts ridge,xgb,mlp]                    capacity sweep (+ oracle ceiling + SPA)
@@ -36,8 +36,9 @@ from scipy import stats as sps  # noqa: E402
 from scipy.stats import rankdata  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 sys.path.insert(0, str(HERE))
-import _train_loader as TL  # noqa: E402  (puts src/ and scripts/validate/ on sys.path)
+import _train_loader as TL  # noqa: E402  (puts src/ on sys.path)
 
 ROOT = TL.ROOT
 from eqxs import equity_ml as ml  # noqa: E402
@@ -71,8 +72,8 @@ M1_ALPHAS = (1.0, 10.0, 100.0, 1e3, 1e4, 1e5)
 KNOWN_LEAK_NUMERIC = ("log_price", "log_mcap", "bm", "ep", "sp")
 
 SMOKE = False
-CACHE = HERE / "p9_cache"
-FIG = HERE / "figures"
+CACHE = RESULTS / "p9_cache"
+FIG = RESULTS / "figures"
 
 
 def cache_dir() -> Path:
@@ -88,7 +89,7 @@ def cells_dir() -> Path:
 
 
 def ck_path(e: str) -> Path:
-    return (cache_dir() / f"p9_{e}.json") if SMOKE else (HERE / f"p9_{e}.json")
+    return (cache_dir() / f"p9_{e}.json") if SMOKE else (RESULTS / f"p9_{e}.json")
 
 
 def log(msg: str) -> None:
@@ -1247,7 +1248,7 @@ def spa_pvalues(D: np.ndarray, cl: np.ndarray, B: int = N_BOOT) -> dict:
 def analyse_e3(ck: dict, smoke: bool = False) -> None:
     out: dict = {}
     base_ck = None
-    p1 = HERE / "p9_e1.json"
+    p1 = RESULTS / "p9_e1.json"
     if SMOKE:
         p1 = cache_dir() / "p9_e1.json"
     if p1.exists():
@@ -1729,7 +1730,7 @@ def analyse_e4(ck: dict) -> None:
                        f"bootstrap {s.get('mde80_power_boot_ci')}\nMDE80 non-stationary (30% of months): cluster-t "
                        f"{n.get('mde80_power_cluster_t')}, bootstrap {n.get('mde80_power_boot_ci')}")
     # equivalence statements from the E1 baselines
-    p1 = (cache_dir() / "p9_e1.json") if SMOKE else (HERE / "p9_e1.json")
+    p1 = (cache_dir() / "p9_e1.json") if SMOKE else (RESULTS / "p9_e1.json")
     if p1.exists():
         e1 = json.loads(p1.read_text())
         eq = {}
@@ -1843,10 +1844,10 @@ def run_figs(args) -> None:
     import matplotlib.pyplot as plt
 
     FIG.mkdir(exist_ok=True)
-    e1 = json.loads((HERE / "p9_e1.json").read_text()) if (HERE / "p9_e1.json").exists() else None
-    e2 = json.loads((HERE / "p9_e2.json").read_text()) if (HERE / "p9_e2.json").exists() else None
-    e3 = json.loads((HERE / "p9_e3.json").read_text()) if (HERE / "p9_e3.json").exists() else None
-    e4 = json.loads((HERE / "p9_e4.json").read_text()) if (HERE / "p9_e4.json").exists() else None
+    e1 = json.loads((RESULTS / "p9_e1.json").read_text()) if (RESULTS / "p9_e1.json").exists() else None
+    e2 = json.loads((RESULTS / "p9_e2.json").read_text()) if (RESULTS / "p9_e2.json").exists() else None
+    e3 = json.loads((RESULTS / "p9_e3.json").read_text()) if (RESULTS / "p9_e3.json").exists() else None
+    e4 = json.loads((RESULTS / "p9_e4.json").read_text()) if (RESULTS / "p9_e4.json").exists() else None
     col = {"M1": "#1f77b4", "M2": "#d62728", "M3": "#2ca02c"}
     if e1:
         fig, ax = plt.subplots(1, 4, figsize=(18, 4.2))

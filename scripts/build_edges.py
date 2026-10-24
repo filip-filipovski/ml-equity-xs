@@ -2,7 +2,7 @@
 """Study 15: build the E1 / E4 / E5 edge tables, the 200-edge E4 precision sample and the
 coverage-gate counts (edge tables + price availability only; no return is read here).
 
-    OMP_NUM_THREADS=3 caffeinate -i poetry run python scripts/validate/equity_graph_build_edges.py [--skip-e4]
+    OMP_NUM_THREADS=3 python scripts/build_edges.py [--skip-e4]
 
 Writes under data_cache/links/edges/: e1_sic_membership.parquet, e4_customer_supplier_edges.parquet,
 e4_member_filing_pairs.parquet (every candidate with its drop reason), e4_precision_sample.csv,
@@ -29,7 +29,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 warnings.filterwarnings("ignore")
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
 from eqxs import equity_graph as eg  # noqa: E402
@@ -38,9 +38,8 @@ OUT = eg.EDGES_DIR
 
 SCHEMA = """# Study 15 edge tables (`data_cache/links/edges/`)
 
-Built by `scripts/validate/equity_graph_build_edges.py` (module `eqxs.equity_graph`,
-edge version `{edge_version}`, resolver `{resolver}`, operator `{operator}`). Pre-declaration:
-`reports/research/STUDY_15_PREDECLARATION_2026-10-11.md` (v2). Every table carries `ts`
+Built by `scripts/build_edges.py` (module `eqxs.equity_graph`,
+edge version `{edge_version}`, resolver `{resolver}`, operator `{operator}`). Pre-declared as study 15 (v2). Every table carries `ts`
 (= valid_from, UTC) for the data-zone tripwire; nothing dated 2023-01-01 or later is read or written.
 A validity end that falls at or after the computation bound is stored as NaT ("open").
 An edge is used at formation date T iff valid_from <= T < valid_to (NaT = open).

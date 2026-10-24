@@ -11,3 +11,6 @@ __pycache__/
 build.log
 results/p9_cache/
 results/p12_cache/
+paper/tables/
+paper/figures/
+paper/main.pdf

@@ -2,7 +2,7 @@
 """Study 13: machine-learning cross-sectional return model on the free US equity panel --
 equities TRAIN 2004-01-01 -> 2019-01-01 only.
 
-Pre-declared design: ``reports/diagnostic/equity_ml_xs_train.md`` §0. Monthly panel of common
+Pre-declared design (study 13). Monthly panel of common
 stocks (ALL = close >= $5 and 63-day median dollar volume >= $1M; LIQ = its top half by dollar
 volume), 29 PIT features + SIC, rank target of the next-month excess return; models M0 ridge-3,
 M1 ridge-all, M2 XGBoost, M3 GKX NN3, M4 XGBoost rank:pairwise, M5 cross-sectional transformer,
@@ -13,9 +13,8 @@ validation slice). Headline cells ENS_LIQ / ENS_ALL with N1 (prediction permutat
 All data come through ``eqxs.equities_xs`` loaders with ``end="2019-01-01"``. The derived
 cache lives under ``data_cache/equities_xs/derived/`` and is checked to hold nothing dated 2019+.
 
-    poetry run python scripts/validate/equity_ml_xs_train.py --quick      # development: 2 OOS years, 2 seeds
-    poetry run python scripts/validate/equity_ml_xs_train.py              # full study
-    poetry run python scripts/validate/equity_ml_xs_train.py --log-db     # verdicts -> strategies.db
+    python scripts/equity_ml_xs_train.py --quick      # development: 2 OOS years, 2 seeds
+    python scripts/equity_ml_xs_train.py              # full study
 """
 
 from __future__ import annotations
@@ -32,7 +31,7 @@ import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
 from eqxs.data_zones import assert_sealed_clean, safe_load_parquet  # noqa: E402
@@ -51,9 +50,9 @@ META_PATH = DERIVED / "ml_panel_train.meta.json"
 SCHEMA_PATH = DERIVED / "ml_panel_train.schema.md"
 PRED_PATH = DERIVED / "eqml_oos_predictions_train.parquet"
 PORT_PATH = DERIVED / "eqml_oos_portfolios_train.parquet"
-OUT_JSON = REPO / "reports/diagnostic/equity_ml_xs_train.json"
-OUT_MD = REPO / "reports/diagnostic/equity_ml_xs_train.md"
-QUICK_JSON = REPO / "reports/diagnostic/equity_ml_xs_train_quick.json"
+OUT_JSON = REPO / "results" / "equity_ml_xs_train.json"
+OUT_MD = REPO / "results" / "equity_ml_xs_train.md"
+QUICK_JSON = REPO / "results" / "equity_ml_xs_train_quick.json"
 MARKER = "<!-- AUTO-RESULTS-BELOW: everything after this marker is (re)written by the script -->"
 SEED = 20261013
 COST = {"ALL": 0.0015, "LIQ": 0.0005}
@@ -356,7 +355,7 @@ def write_schema(panel: pd.DataFrame) -> None:
     lines = ["# ml_panel_train.parquet (study 13, eqml) -- schema note", "",
              "One row per (month-end formation date T, firm) in the ALL universe, TRAIN formation dates",
              "2004-01 .. 2018-12; nothing dated 2019-01-01 or later (asserted on write and on read).",
-             f"Producer: scripts/validate/equity_ml_xs_train.py ({RUN_VERSION}). {SURV_NOTE}.", "",
+             f"Producer: scripts/equity_ml_xs_train.py ({RUN_VERSION}). {SURV_NOTE}.", "",
              "* `date` T (last session of the month), `ts` = T as UTC (for the data-zone tripwire), `date_id`,",
              "  `mi` month index (year*12+month-1) of T, `target_mi` month index of the entry session (-1 = no target).",
              "* `symbol` (yfinance), `firm` (column id), `cik` (Int64, study-11 map), `in_liq` (top half by 63-day",
@@ -994,7 +993,7 @@ def write_markdown(out: dict) -> None:
     a("")
     a("**Pre-declared ablation** (" + ", ".join(out["ablation_components"]) + " retrained without "
       + ", ".join(ml.ABLATION_DROP) + "; DIAGNOSTIC). Deviation from the brief: M5 is not retrained for the "
-      "ablation (coordinator resource decision taken before any result was seen, saves ~1.5 h); the like-for-like "
+      "ablation (author's resource decision taken before any result was seen, saves ~1.5 h); the like-for-like "
       "comparison is the full-feature ensemble of the same components (rows marked *same components*):")
     a("")
     a("| cell | IC (t) | gross SR (ann.) | net SR (ann.) | max DD | β | pos. years |")
@@ -1069,7 +1068,7 @@ def write_markdown(out: dict) -> None:
       f"{meta['fundamentals']['raw_rows']:,} ({meta['fundamentals']['prepared_rows']:,} used); SUE events "
       f"{meta['fundamentals']['sue_events']:,}. Inputs: {len(out['inputs'])} (ablation {len(out['ablation_inputs'])}).")
     a("")
-    text = OUT_MD.read_text()
+    text = OUT_MD.read_text() if OUT_MD.exists() else ""
     head = text.split(MARKER)[0]
     OUT_MD.write_text(head.rstrip("\n") + "\n\n" + MARKER + "\n" + "\n".join(L) + "\n")
 
@@ -1083,8 +1082,7 @@ def main() -> None:
     ap.add_argument("--rebuild", action="store_true", help="rebuild the derived feature panel")
     ap.add_argument("--build-only", action="store_true")
     ap.add_argument("--ablation-models", default="M2,M3,M4",
-                    help="ensemble components retrained for the ablation (coordinator: M5 skipped)")
-    ap.add_argument("--log-db", action="store_true")
+                    help="ensemble components retrained for the ablation (M5 skipped)")
     ap.add_argument("--smoke-eval", action="store_true",
                     help="with --quick: exercise the evaluation code, outputs to /tmp, stdout discarded")
     args = ap.parse_args()
@@ -1092,13 +1090,10 @@ def main() -> None:
         global OUT_JSON, OUT_MD, PRED_PATH, PORT_PATH, N_N1, N_N2
         tmp = Path("/tmp/eqml_smoke")
         tmp.mkdir(exist_ok=True)
-        (tmp / "r.md").write_text(OUT_MD.read_text())
+        (tmp / "r.md").write_text(OUT_MD.read_text() if OUT_MD.exists() else "")
         OUT_JSON, OUT_MD = tmp / "r.json", tmp / "r.md"
         PRED_PATH, PORT_PATH = tmp / "pred.parquet", tmp / "port.parquet"
         N_N1, N_N2 = 5, 20
-    if args.log_db:
-        log_verdicts(json.loads(OUT_JSON.read_text()))
-        return
     if args.build_only:
         build_panel()
         assert_sealed_clean()
@@ -1111,32 +1106,6 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(out, indent=1, default=float))
     write_markdown(out)
     log(f"wrote {OUT_JSON} + {OUT_MD} ({out['runtime_s']} s)")
-
-
-def log_verdicts(out: dict) -> None:
-    from eqxs.knowledge import verdict_log as vl
-
-    rep = "reports/diagnostic/equity_ml_xs_train.md"
-    lineage = ("Gu, Kelly & Xiu 2020 (RFS, NN3 / boosted trees / OOS R2); learning-to-rank (Burges 2010); "
-               "cross-sectional attention over firms (set transformer, Lee et al. 2019). Ensemble of "
-               + ", ".join(out["ensemble_components"]) + ".")
-    for u, c in out["headline"].items():
-        sid = f"eqml_ENS_{u}"
-        n, g = c["net"], c["gross"]
-        vl.upsert_strategy(sid, f"equity_ml ensemble long-short decile ({u})", family="equity_ml_xs",
-                           module="eqxs.equity_ml", caveats=lineage + " " + SURV_NOTE)
-        vl.upsert_verdict(
-            sid, c["verdict"], framework_status=f"train_{c['verdict']}_" + ("_".join(c["fails"]) or "none"),
-            best_sharpe=n["sharpe"], best_maxdd=n["max_dd"],
-            notes=(f"Monthly decile L/S of the M6 ensemble, {u} universe, {c['cost_per_side_bps']:.0f} bps/side, "
-                   f"OOS target months 2009-01..2018-11 (yearly expanding refits, equities TRAIN only); "
-                   f"survivor-only prices. Net SR {n['sharpe']:+.2f} ({n['ann_return'] * 100:+.2f}%/yr), gross SR "
-                   f"{g['sharpe']:+.2f} ({g['ann_return'] * 100:+.2f}%/yr), IC {c['ic']['ic_mean']:+.4f} "
-                   f"(t {c['ic']['ic_t']:+.2f}), beta {n['beta']:+.2f}, N1 p {c['N1']['p']:.3f}, N2 p "
-                   f"{c['N2']['p']:.3f}, N1 MDE {c['N1']['mde_ann_return'] * 100:+.2f}%/yr, N2 MDE "
-                   f"{c['N2']['mde_ann_return'] * 100:+.2f}%/yr, positive years {n['years_positive']}/"
-                   f"{n['years_counted']}; fails {c['fails']}. {rep}"))
-        print(f"logged {sid}: {c['verdict']}")
 
 
 if __name__ == "__main__":

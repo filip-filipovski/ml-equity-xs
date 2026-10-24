@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 sys.path.insert(0, str(HERE))
 import p9_ml_capacity as P9  # noqa: E402
 
@@ -23,7 +24,7 @@ D = P9.TL.CACHE / "equities_xs" / "derived"
 P9.PANEL_PATH = D / "ml_panel_train2023.parquet"
 P9.META_PATH = D / "ml_panel_train2023.meta.json"
 YEARS = [2019, 2020, 2021, 2022]
-OUT = HERE / "p9_e6.json"
+OUT = RESULTS / "p9_e6.json"
 PX_FEATS = ["log_price", "log_mcap", "bm", "ep", "sp"]  # price-level features (addendum 1: non-PIT split channel)
 P9_REF_IC = 0.0314  # P9 E1 M2 ALL, 2009-2018 (recomputed below from p9_e1.json)
 
@@ -79,7 +80,7 @@ def main() -> None:
         res = P9.fit_predict_cell(panel, panel.X, panel.columns, refits, "M2")
         sc = P9.score_preds(panel, res, portfolio=False)
         ic = np.asarray(sc["ic_all"], float)
-        ref = json.load(open(HERE / "p9_e1.json"))["cells"]["base|M2"]
+        ref = json.load(open(RESULTS / "p9_e1.json"))["cells"]["base|M2"]
         ric = np.asarray(ref["ic_all"], float)[np.asarray(ref["cluster"]) == 2018]
         # the extended window completes the 2018-12 holding window (12 months vs P9's 11): compare the common 11
         n = min(len(ic), len(ric))
@@ -87,7 +88,7 @@ def main() -> None:
         log(f"check2018: new-panel M2 2018 IC mean {ic[:n].mean():+.4f} (n={len(ic)}) vs P9 E1 {ric.mean():+.4f} "
             f"(n={len(ric)}); common {n} months: per-month diff mean {d.mean():+.4f} sd {d.std(ddof=1):.4f}; "
             f"month-SD of the IC itself {ric.std(ddof=1):.4f}; corr {np.corrcoef(ic[:n], ric[:n])[0, 1]:+.3f}")
-        (HERE / "p9_e6_check2018.json").write_text(json.dumps(
+        (RESULTS / "p9_e6_check2018.json").write_text(json.dumps(
             {"new_ic": ic.tolist(), "p9_ic": ric.tolist(), "n_common": n, "diff_mean": float(d.mean()),
              "diff_sd": float(d.std(ddof=1)), "ic_month_sd_p9": float(ric.std(ddof=1)),
              "corr": float(np.corrcoef(ic[:n], ric[:n])[0, 1])}, indent=1))
@@ -133,7 +134,7 @@ def main() -> None:
     out["M2b"] = read_cell(panelB, resM2b, "C1b fixed booster (PIT-safe)")
     out["meta"]["wall_seconds_total"] = time.time() - t0
 
-    ref = json.load(open(HERE / "p9_e1.json"))["cells"]["base|M2"]
+    ref = json.load(open(RESULTS / "p9_e1.json"))["cells"]["base|M2"]
     sr = P9.cstats(np.asarray(ref["ic_all"], float), np.asarray(ref["cluster"]))
 
     def reads(key_m2: str, key_m1: str) -> dict:

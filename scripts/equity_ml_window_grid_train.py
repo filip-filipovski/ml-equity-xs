@@ -2,8 +2,7 @@
 """Study 14: training-window / timeframe grid for the equity ML cross-section -- equities TRAIN
 2004-01-01 -> 2019-01-01 only.
 
-Pre-declared design (FINAL, v2): ``reports/research/STUDY_14_PREDECLARATION_2026-10-10.md``
-(after the design review ``reports/redteam/STUDY_14_DESIGN_REVIEW_2026-10-10.md``). Ten trial
+Pre-declared design (FINAL, v2, after the design review). Ten trial
 cells T1-T10 (window {expanding, rolling 5 y, rolling 3 y} x horizon {weekly, monthly,
 quarterly} at annual refit, plus rolling 3 y / quarterly refit / weekly), ENS5 = M0..M4 on the
 liquid half at 5 bps per side; diagnostics D0-D6. Library: ``eqxs.equity_ml_grid``
@@ -13,10 +12,9 @@ All data come through ``eqxs.equities_xs`` loaders with ``end="2019-01-01"``. St
 panels, refit cache, predictions and portfolios live under
 ``data_cache/equities_xs/derived/eqml_grid/``; study 13's cache (``eqml_runs/``) is never read.
 
-    poetry run python scripts/validate/equity_ml_window_grid_train.py --rebuild-panels --build-only
-    poetry run python scripts/validate/equity_ml_window_grid_train.py --cells all
-    poetry run python scripts/validate/equity_ml_window_grid_train.py --report-only
-    poetry run python scripts/validate/equity_ml_window_grid_train.py --log-db
+    python scripts/equity_ml_window_grid_train.py --rebuild-panels --build-only
+    python scripts/equity_ml_window_grid_train.py --cells all
+    python scripts/equity_ml_window_grid_train.py --report-only
 """
 
 from __future__ import annotations
@@ -41,7 +39,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 warnings.filterwarnings("ignore")
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
 from eqxs.data_zones import (  # noqa: E402
@@ -66,9 +64,9 @@ PORT_DIR = GRID / "portfolios"
 STUDY13_PANEL = DERIVED / "ml_panel_train.parquet"
 STUDY13_MONTHS = DERIVED / "ml_months_train.parquet"
 STUDY13_META = DERIVED / "ml_panel_train.meta.json"
-STUDY13_JSON = REPO / "reports/diagnostic/equity_ml_xs_train.json"
-OUT_JSON = REPO / "reports/diagnostic/equity_ml_window_grid_train.json"
-OUT_MD = REPO / "reports/diagnostic/equity_ml_window_grid_train.md"
+STUDY13_JSON = REPO / "results" / "equity_ml_xs_train.json"
+OUT_JSON = REPO / "results" / "equity_ml_window_grid_train.json"
+OUT_MD = REPO / "results" / "equity_ml_window_grid_train.md"
 SEED = 20261013  # study 13's SEED; refit seed = SEED + month index of the first test month
 N_N1 = 500
 N_N2 = 1000
@@ -110,8 +108,8 @@ SUMMARY_AFTER_RUN = (
 )
 DISCLOSURES = (
     "Discarded fits (bug fixes, not result-driven). A first full run under the v2 machinery completed T5, D3, D0, "
-    "T4, T6, T7, T8 and T9 and part of D1 before the coordinator's v3 addendum arrived (study-13 red team, "
-    "reports/redteam/EQUITY_ML_STUDY_13_REDTEAM_2026-10-10.md, R1-R15). That run was stopped; its cell JSONs, "
+    "T4, T6, T7, T8 and T9 and part of D1 before the author's v3 addendum arrived (study-13 red team, "
+    "red-team items R1-R15). That run was stopped; its cell JSONs, "
     "predictions and refit cache were moved unread to data_cache/equities_xs/derived/eqml_grid/discarded_v2_unread/ "
     "(the run log showed only validation ICs and timings; no OOS metric was printed or opened). Every cell in this "
     "report was refitted from scratch under v3 on rebuilt panels (cache version eqgrid-v3).",
@@ -1019,7 +1017,7 @@ def assemble() -> dict:
     metas = {h: json.loads(panel_paths(h)["meta"].read_text()) for h in ("M", "Q", "W")
              if panel_paths(h)["meta"].exists()}
     return {"study": "eqgrid (study 14)", "zone": "equities TRAIN 2004-01-01..2019-01-01",
-            "predeclaration": "reports/research/STUDY_14_PREDECLARATION_2026-10-10.md (v2)",
+            "predeclaration": "study 14 pre-declaration (v2)",
             "seed": SEED, "survivorship_note": SURV_NOTE, "survivorship_direction": SURV_DIRECTION,
             "periods_per_year": g.PERIODS_PER_YEAR, "n2_block": g.N2_BLOCK,
             "panel_meta": metas, "cells": cells, "D6": d6, "dsr": dsr, "verdict": verdict,
@@ -1058,9 +1056,8 @@ def write_markdown(out: dict) -> None:
     a("# Study 14: training-window / timeframe grid for the equity ML cross-section, TRAIN only")
     a("")
     a("Study id `eqgrid`, equities zone, TRAIN 2004-01-01 → 2019-01-01 (exclusive); WFA and sealed untouched. "
-      "Pre-declaration: `reports/research/STUDY_14_PREDECLARATION_2026-10-10.md` (v2, after the design review "
-      "`reports/redteam/STUDY_14_DESIGN_REVIEW_2026-10-10.md`). Library `eqxs.equity_ml_grid` "
-      "(wraps study 13's `equity_ml`, unmodified), driver `scripts/validate/equity_ml_window_grid_train.py`, "
+      "Pre-declaration: study 14 (v2, after the design review). Library `eqxs.equity_ml_grid` "
+      "(wraps study 13's `equity_ml`, unmodified), driver `scripts/equity_ml_window_grid_train.py`, "
       "cache `data_cache/equities_xs/derived/eqml_grid/`. Auto-generated by the driver.")
     a("")
     a(f"**Every table is on the {SURV_NOTE}.** Survivorship direction for every cell: {SURV_DIRECTION}. "
@@ -1466,51 +1463,6 @@ def write_markdown(out: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Verdict log
-# ---------------------------------------------------------------------------
-def log_verdicts(out: dict) -> None:
-    from eqxs.knowledge import verdict_log as vl
-
-    rep = "reports/diagnostic/equity_ml_window_grid_train.md"
-    for t in g.TRIALS:
-        c = out["cells"][t.cell_id]
-        sid = f"eqgrid_{t.cell_id}"
-        vl.upsert_strategy(sid, f"equity_ml ENS5 decile L/S, {cell_label(t.as_dict())} (LIQ)",
-                           parent_id="eqml_ENS_LIQ", family="equity_ml_xs",
-                           module="eqxs.equity_ml_grid", caveats=SURV_NOTE)
-        if c.get("status") != "RUN":
-            vl.upsert_verdict(sid, "NOT_RUN", framework_status="train_NOT_RUN",
-                              notes=f"Study 14 trial {t.cell_id} NOT RUN: {c.get('reason')}. {rep}")
-            continue
-        Lq = c["LIQ"]
-        E = Lq["ENS"]
-        dd = out["dsr"]["per_cell"].get(t.cell_id, {}).get("dsr", float("nan"))
-        vl.upsert_verdict(
-            sid, Lq["verdict"], framework_status=f"train_{Lq['verdict']}_" + ("_".join(Lq["fails"]) or "none"),
-            best_sharpe=E["net_ew"]["sharpe"], best_maxdd=E["net_ew"]["max_dd"],
-            notes=(f"Study 14 trial {t.cell_id}: {cell_label(t.as_dict())}; ENS5 (M0-M4) decile L/S, liquid half, "
-                   f"5 bps/side, equities TRAIN, OOS 2009-{E['last_entry'][:4]}; survivor-only prices. Net SR "
-                   f"{E['net_ew']['sharpe']:+.2f} ({E['net_ew']['ann_return'] * 100:+.2f}%/yr), gross SR "
-                   f"{E['gross']['sharpe']:+.2f} ({E['gross']['ann_return'] * 100:+.2f}%/yr), IC {E['ic']['ic_mean']:+.4f} "
-                   f"(t {E['ic']['ic_t']:+.2f}), turnover {E['turnover_per_year_ew']:.1f}/yr, break-even "
-                   f"{E['break_even_cost_bps_ew']:+.1f} bps/side, N1 p {Lq['N1']['ew1']['p']:.3f}, N2 p "
-                   f"{Lq['N2']['ew1']['p']:.3f}, DSR {dd:.3f}; fails {Lq['fails']}. {rep}"))
-        print(f"logged {sid}: {Lq['verdict']}")
-    v = out["verdict"]
-    vl.upsert_strategy("eqgrid_STUDY", "study 14 window/timeframe grid (equity ML cross-section)",
-                       parent_id="eqml_ENS_LIQ", family="equity_ml_xs",
-                       module="eqxs.equity_ml_grid", caveats=SURV_NOTE)
-    d = out["dsr"]
-    vl.upsert_verdict(
-        "eqgrid_STUDY", v["study_verdict"], framework_status=f"train_{v['study_verdict']}",
-        best_sharpe=d["per_cell"].get(d["best_cell"], {}).get("sr_ann") if d["best_cell"] else None,
-        notes=(f"Study 14 (pre-declared v2): 10 trials {v['per_trial']}; route (a) T5 PASS {v['route_a_T5_pass']}; "
-               f"route (b) {v['route_b_cells'] or 'none'}; DSR N=10, SR0 {d['sr0_ann']:+.3f}, best "
-               f"{d['best_cell']} DSR {d['best_dsr']:.3f}. {rep}"))
-    print(f"logged eqgrid_STUDY: {v['study_verdict']}")
-
-
-# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 def smoke_eval(panels: Panels) -> None:
@@ -1547,12 +1499,8 @@ def main() -> None:
     ap.add_argument("--smoke-eval", action="store_true", help="evaluation code on random predictions")
     ap.add_argument("--force", action="store_true", help="re-run cells that already have results")
     ap.add_argument("--report-only", action="store_true")
-    ap.add_argument("--log-db", action="store_true")
     args = ap.parse_args()
     CELLS_DIR.mkdir(parents=True, exist_ok=True)
-    if args.log_db:
-        log_verdicts(json.loads(OUT_JSON.read_text()))
-        return
     if args.rebuild_panels or not all(panel_paths(h)["panel"].exists() for h in ("M", "Q", "W")):
         build_panels()
     if args.build_only:

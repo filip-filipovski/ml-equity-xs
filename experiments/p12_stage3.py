@@ -10,10 +10,11 @@ import glob, json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p12_books as PB  # noqa: E402
 from eqxs.data_zones import safe_load_parquet, sealed_load_count  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
-G = Path("data_cache/equities_xs/derived/eqml_grid"); RUNS = G / "eqml14_runs"
+G = (HERE.parent / "data_cache/equities_xs/derived/eqml_grid"); RUNS = G / "eqml14_runs"
 cols = ["firm", "date", "target_mi", "y_raw", "in_liq", "raw_vol_63", "raw_beta_252"]
 pw = safe_load_parquet(G / "panel_W.parquet", max_end_date="2023-01-01", caller_intent="p12 stage3 weekly panel (TRAIN)", zone_config=None) if False else pd.read_parquet(G / "panel_W.parquet")
 sic_cols = [c for c in pw.columns if c.startswith("sic_")]; pw = pw[cols + sic_cols]
@@ -86,4 +87,4 @@ for kind in ("vs", "vsn", "band_vs"):
 best_g = max(out["cells"].items(), key=lambda kv: kv[1]["gross_sharpe"]); best_n = max(out["cells"].items(), key=lambda kv: kv[1]["net_sharpe"])
 out["best_dev_gross"] = {"cell": best_g[0], "gross_sharpe": best_g[1]["gross_sharpe"]}; out["best_dev_net"] = {"cell": best_n[0], "net_sharpe": best_n[1]["net_sharpe"], "net_ann": best_n[1]["net_ann"]}
 out["sealed_load_count"] = int(sealed_load_count()); out["panel_max_date"] = str(pw["date"].max().date())
-(HERE / "p12_stage3.json").write_text(json.dumps(out, indent=1, default=float)); log("best dev gross", best_g[0], round(best_g[1]["gross_sharpe"], 2), "| best dev net", best_n[0], round(best_n[1]["net_sharpe"], 2), "| wrote p12_stage3.json")
+(RESULTS / "p12_stage3.json").write_text(json.dumps(out, indent=1, default=float)); log("best dev gross", best_g[0], round(best_g[1]["gross_sharpe"], 2), "| best dev net", best_n[0], round(best_n[1]["net_sharpe"], 2), "| wrote p12_stage3.json")

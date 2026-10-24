@@ -9,10 +9,11 @@ import glob, json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p12_books as PB  # noqa: E402
 import p12_stage1b_lib as L1  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
-G = Path("data_cache/equities_xs/derived/eqml_grid"); RUNS = G / "eqml14_runs"; E = Path("data_cache/links/edges")
+G = (HERE.parent / "data_cache/equities_xs/derived/eqml_grid"); RUNS = G / "eqml14_runs"; E = (HERE.parent / "data_cache/links/edges")
 PER = 52; THETAS = (0.05, 0.1, 0.2, 0.5, 1.0); COSTS = (0.0001, 0.0002, 0.0005, 0.0015)
 
 def load_cached(h: str, cols: list[str]) -> pd.DataFrame:
@@ -97,4 +98,4 @@ for aname, Z in AIMS.items():
 def best_at(key):
     k, v = max(res["cells"].items(), key=lambda kv: kv[1][key]["sharpe"]); return {"cell": k, **v[key]}
 res["best"] = {"declared_cost": max(((k, v[f"net_{DECL[k.split('_')[-2]]}bps"]) for k, v in res["cells"].items()), key=lambda kv: kv[1]["sharpe"]), "net_2bps": best_at("net_2bps"), "net_5bps": best_at("net_5bps"), "net_15bps": best_at("net_15bps"), "gross": max(((k, v["gross_sharpe"]) for k, v in res["cells"].items()), key=lambda kv: kv[1])}
-(HERE / "p12b_routes.json").write_text(json.dumps(res, indent=1, default=float)); log("BEST:", json.dumps(res["best"], default=float)[:600], "| wrote p12b_routes.json")
+(RESULTS / "p12b_routes.json").write_text(json.dumps(res, indent=1, default=float)); log("BEST:", json.dumps(res["best"], default=float)[:600], "| wrote p12b_routes.json")

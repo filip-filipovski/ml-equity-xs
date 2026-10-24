@@ -1,19 +1,16 @@
-"""Earnings calendar for the forward option-snapshot universe (pure helpers, no network).
+"""Earnings calendar for the US equity universe (pure helpers, no network).
 
 History comes from SEC EDGAR: every 8-K whose items include **2.02** (Results of
 Operations), its ``acceptanceDateTime`` mapped to ET and classified BMO / AMC /
-INTRADAY, then one event per (ticker, calendar quarter of the announcement) — the
-stage-1 scheduled-event study's rule, reused verbatim from
-the 8-K item 2.02 parsing functions below (``parse_edgar_8k_202``,
-``acceptance_to_et``, ``classify_timing``, ``dedupe_earnings``). The calendar quarter
-of the announcement date is the stage-1 proxy for "first per fiscal quarter".
-Guidance / deliveries 8-Ks are skipped through the same documented mechanism as
-stage 1: explicit per-accession overrides plus the Tesla rule. Stage 1 (2015-2020)
-identified Tesla's production & deliveries releases by item 7.01; from 2023 they
-are filed as plain 2.02 + 9.01 like the earnings 8-Ks, so the rule here also drops
-any TSLA 2.02 8-K accepted on days 1-7 of a quarter's first month (deliveries come
-out ~2 days into the quarter; Tesla has reported earnings no earlier than the
-15th since 2012).
+INTRADAY, then one event per (ticker, calendar quarter of the announcement), using the
+8-K item 2.02 parsing functions below (``parse_edgar_8k_202``, ``acceptance_to_et``,
+``classify_timing``, ``dedupe_earnings``). The calendar quarter of the announcement date
+is the proxy for "first per fiscal quarter". Guidance / deliveries 8-Ks are skipped
+through explicit per-accession overrides plus the Tesla rule: Tesla's production &
+deliveries releases were identified by item 7.01 until 2020; from 2023 they are filed as
+plain 2.02 + 9.01 like the earnings 8-Ks, so the rule here also drops any TSLA 2.02 8-K
+accepted on days 1-7 of a quarter's first month (deliveries come out ~2 days into the
+quarter; Tesla has reported earnings no earlier than the 15th since 2012).
 
 Nothing is silently resolved beyond that: :func:`flag_ambiguous` marks rows a human
 should eyeball (several 2.02 8-Ks in one quarter, INTRADAY acceptance, weekend

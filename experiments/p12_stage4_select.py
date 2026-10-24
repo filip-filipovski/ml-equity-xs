@@ -6,7 +6,8 @@ cells without a check window (weekly stages 3, 3b) listed separately; exact expe
 import json, math, numpy as np
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
-s0, s1, s1b, s2, s3, s3b = (json.load(open(HERE / f"p12_stage{k}.json")) for k in ("0", "1", "1b", "2", "3", "3b"))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
+s0, s1, s1b, s2, s3, s3b = (json.load(open(RESULTS / f"p12_stage{k}.json")) for k in ("0", "1", "1b", "2", "3", "3b"))
 cells = []
 for cid, m in s0["cells"].items(): cells.append(("S0 M2(cached)", cid, m))
 for cid, m in s0["cells_voltarget10"].items(): cells.append(("S0 M2(cached)", cid, m))
@@ -27,5 +28,5 @@ rng = np.random.default_rng(1); se = 1 / math.sqrt(10); emax = {N: float((rng.st
 out = {"design": __doc__, "n_cells_with_check": len(cells), "n_weekly_cells": len(weekly), "n_total": len(cells) + len(weekly), "selection_top8": top,
        "cells_with_net_ge_0_5_on_both_windows": both, "expected_max_of_N_noise_sharpes_10y_exact_mc": emax, "asymptotic_sqrt2lnN_over_sqrt10": {N: float(se * math.sqrt(2 * math.log(N))) for N in emax},
        "weekly_benchmarks": s3.get("bound_detail"), "monthly_benchmarks": s0["bounds"]}
-(HERE / "p12_stage4.json").write_text(json.dumps(out, indent=1, default=float))
+(RESULTS / "p12_stage4.json").write_text(json.dumps(out, indent=1, default=float))
 print("cells", len(cells), "+", len(weekly), "weekly; selected:", top[0]["signal"], top[0]["book"], round(top[0]["dev_net_sharpe"], 3), "chk", round(top[0]["chk_net_sharpe"], 3), "CI", top[0]["dev_net_sharpe_ci95"]); print("both >= 0.5:", both); print("E[max] exact:", {k: round(v, 2) for k, v in emax.items()})

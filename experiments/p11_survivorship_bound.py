@@ -27,6 +27,7 @@ EX_SPAC = "--ex-spac" in sys.argv  # red-team F3: exclude blank-check filers (SI
 from pathlib import Path
 import numpy as np, pandas as pd, pyarrow.parquet as pq, pyarrow.compute as pc, pyarrow as pa
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9, p9_b_wfa_oneshot as PB  # noqa (PB patches the panel loader)
 from eqxs import equities_xs as xs
 ROOT = P9.TL.ROOT; X = xs.XS_ROOT; D = X / "derived"
@@ -133,5 +134,5 @@ for lab, yrs in (("2014_2018", range(2014, 2019)), ("2019_2022", range(2019, 202
                     "long_bias_pct": float(s["long_bias"].mean() * 100), "short_bias_pct": float(s["short_bias"].mean() * 100),
                     "measured_minus_true_spread_pct": float((-(s["long_bias"].mean()) + s["short_bias"].mean()) * 100)}
     v = summary[lab]; log(f"SUMMARY {lab}: pop death12 {v['pop_death12']:.1%} | long leg missing/yr {v['long_death12']:.1%} (abnormal {v['long_bias_pct']:+.2f} pp) | short leg missing/yr {v['short_death12']:.1%} (abnormal {v['short_bias_pct']:+.2f} pp) | measured spread minus true ≈ {v['measured_minus_true_spread_pct']:+.2f} pp/yr under the fixed assumptions (range x0.5..x2)")
-(HERE / ("p11_survivorship_bound_exspac.json" if EX_SPAC else "p11_survivorship_bound.json")).write_text(json.dumps({"assumptions": ASSUME, "rows": out_rows, "summary": summary}, indent=1, default=float))
+(RESULTS / ("p11_survivorship_bound_exspac.json" if EX_SPAC else "p11_survivorship_bound.json")).write_text(json.dumps({"assumptions": ASSUME, "rows": out_rows, "summary": summary}, indent=1, default=float))
 log("wrote " + ("p11_survivorship_bound_exspac.json" if EX_SPAC else "p11_survivorship_bound.json"))

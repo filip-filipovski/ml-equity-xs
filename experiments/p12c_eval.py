@@ -7,10 +7,11 @@ import json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p12_books as PB  # noqa: E402
 import p12_stage1b_lib as L1  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
-G = Path("data_cache/equities_xs/derived/eqml_grid_2023"); E = Path("data_cache/links/edges"); CACHE = HERE / "p12_cache"
+G = (HERE.parent / "data_cache/equities_xs/derived/eqml_grid_2023"); E = (HERE.parent / "data_cache/links/edges"); CACHE = RESULTS / "p12_cache"
 PER = 52; THETAS = (0.05, 0.1, 0.2, 0.5, 1.0); COSTS = (0.0001, 0.0002, 0.0005, 0.0015); DECL = {"ALL": "15", "LIQ": "5", "TOP500": "2"}; LAST = 2022 * 12 + 11
 def load(h, cols):
     pf = pd.read_parquet(G / f"panel_{h}.parquet"); pf = pf[[c for c in cols if c in pf.columns]]
@@ -80,4 +81,4 @@ elig = [(cid, r) for cid, r in res["cells"].items() if r["dev"][f"net_{DECL[cid.
 sel = max(elig, key=lambda kv: kv[1]["dev"][f"net_{DECL[kv[0].split('_')[-2]]}bps"]["sharpe"]); k = f"net_{DECL[sel[0].split('_')[-2]]}bps"
 res["selected"] = {"cell": sel[0], "dev": sel[1]["dev"][k], "dev_gross_sharpe": sel[1]["dev"]["gross_sharpe"], "chk": sel[1]["chk"][k], "chk_gross_sharpe": sel[1]["chk"]["gross_sharpe"], "declared_cost_bps": k}
 res["pass"] = bool(sel[1]["dev"][k]["sharpe"] >= 1.5 and sel[1]["chk"][k]["sharpe"] >= 1.5 and sel[1]["dev"][k]["maxdd"] >= -0.25 and sel[1]["chk"][k]["maxdd"] >= -0.25)
-(HERE / "p12c_eval.json").write_text(json.dumps(res, indent=1, default=float)); log("SELECTED:", json.dumps(res["selected"], default=float), "| PASS:", res["pass"], "| wrote p12c_eval.json")
+(RESULTS / "p12c_eval.json").write_text(json.dumps(res, indent=1, default=float)); log("SELECTED:", json.dumps(res["selected"], default=float), "| PASS:", res["pass"], "| wrote p12c_eval.json")

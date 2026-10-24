@@ -7,6 +7,7 @@ import json, math, sys
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9, p9_e6_fresh_window as E6, p9_b_wfa_oneshot as PB, p10_books as BK  # noqa (PB patches loader)
 from eqxs import equity_ml as ml
 D = P9.TL.CACHE / "equities_xs" / "derived"
@@ -44,4 +45,4 @@ for stem, design, key in (("ml_panel_wfa2024", "f28", "C1"), ("ml_panel_wfa2024_
         print(f"{key} {bid:22s} 2009-23: net {full['net_ann']*100:+.2f}%/yr SR {full['net_sharpe']:+.2f} DD {full['maxdd']*100:+.1f}% vol {full['ann_vol']*100:.1f}% | "
               f"2009-22: net {pre['net_ann']*100:+.2f}% SR {pre['net_sharpe']:+.2f} DD {pre['maxdd']*100:+.1f}% | 2023: net {out[key]['books'][bid]['y2023']['net_ann']*100:+.1f}% SR {out[key]['books'][bid]['y2023']['net_sharpe']:+.2f}")
     print(f"{key} IC by year:", {y: round(v, 3) for y, v in out[key]['ic_by_year'].items()}, "| full mean", round(out[key]['ic_full_mean'], 4), "month t", round(out[key]['ic_full_month_t'], 2))
-(HERE / "p9_b_fullhistory.json").write_text(json.dumps(out, indent=1, default=float))
+(RESULTS / "p9_b_fullhistory.json").write_text(json.dumps(out, indent=1, default=float))

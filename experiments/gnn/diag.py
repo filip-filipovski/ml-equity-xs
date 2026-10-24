@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import common  # noqa: E402
 
-sys.path.insert(0, str(common.ML_MEETING))
+sys.path.insert(0, str(common.EXPERIMENTS))
 import p12_stage1b_lib as L1  # noqa: E402
 
 

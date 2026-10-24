@@ -2,8 +2,7 @@
 
 Pure functions (feature construction, point-in-time joins, target, expanding-window splitter
 with embargo, model wrappers M0-M6 behind one interface, decile portfolios, nulls, metrics)
-used by ``scripts/validate/equity_ml_xs_train.py``
-(``reports/diagnostic/equity_ml_xs_train.md``). Nothing here reads data: callers pass
+used by ``scripts/equity_ml_xs_train.py``. Nothing here reads data: callers pass
 matrices / tables built from the ``eqxs.equities_xs`` loaders.
 
 Conventions

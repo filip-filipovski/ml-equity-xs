@@ -1,7 +1,7 @@
 """Study 14: training-window / timeframe grid for the equity ML cross-section.
 
 Wraps :mod:`eqxs.equity_ml` (study 13) without modifying it. Everything that
-study 14's pre-declaration (``reports/research/STUDY_14_PREDECLARATION_2026-10-10.md``, v2)
+study 14's pre-declaration (v2)
 changes relative to study 13 lives here:
 
 * formation rows per horizon (weekly every 5th session from 2004-01-02, month-ends,
@@ -18,14 +18,14 @@ changes relative to study 13 lives here:
 * the deflated Sharpe with the Bailey-Lopez de Prado cross-trial variance (M1);
 * the years rule ``ex_best_year_positive`` via the shared
   :func:`eqxs.equity_events.event_study_verdict`;
-* v3 addendum (coordinator, after the study-13 red team R1-R15, before any study-14 result):
+* v3 addendum (author, after the study-13 red team R1-R15, before any study-14 result):
   tie-safe average-rank validation IC and random (seeded) decile tie-breaks (R3); fixed booster
   settings without grid or early stopping, M4 with a hessian-scaled min_child_weight, and a
   non-degenerate-prediction assertion after every fit (R2, R4); the N1 gate on the GROSS
   statistic (R1); ex-ante book beta and a beta-hedged book (R5); daily FF3 + MOM attribution of
   the spread (R6); split-distorted XBRL share rows flagged (R8).
 
-Nothing here reads data; the driver is ``scripts/validate/equity_ml_window_grid_train.py``.
+Nothing here reads data; the driver is ``scripts/equity_ml_window_grid_train.py``.
 """
 
 # ruff: noqa: N803, N806  (X / R: matrix names follow the maths)

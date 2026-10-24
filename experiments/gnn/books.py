@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""P13 book evaluation: a faithful port of reports/ml_meeting/p12c_eval.py (the P12c 55-cell book grid) into a function that takes
+"""P13 book evaluation: a faithful port of experiments/p12c_eval.py (the P12c 55-cell book grid) into a function that takes
 arbitrary prediction files in the common format (rows, pred) for the three horizons W / M / Q.
 
 Aims, universes, cost tiers, thetas, DECL, w_vsn4 construction, partial adjustment, the >= 50-names rule, the selection rule and the pass rule are
@@ -19,7 +19,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import common  # noqa: E402
 
-sys.path.insert(0, str(common.ML_MEETING))
+sys.path.insert(0, str(common.EXPERIMENTS))
 import p12_books as PB  # noqa: E402
 import p12_stage1b_lib as L1  # noqa: E402
 
@@ -51,7 +51,7 @@ def require_gate() -> None:
 def read_pred(path: Path, h: str, p12c: bool = False):
     """Returns (rows, pred, hp_hash, code_hash). P13 files: verified keys / fingerprint / row set + registered hash. p12c=True: the key-less P12c cache (regression only)."""
     if p12c:
-        allowed = (common.ML_MEETING / "p12_cache").resolve(); rp = Path(path).resolve()
+        allowed = (common.ML_RESULTS / "p12_cache").resolve(); rp = Path(path).resolve()
         assert rp.is_relative_to(allowed), f"--p12c may only read files under {allowed}, not {rp} (a P13 file would bypass the A10 gate)"
         z = np.load(path); return z["rows"].astype(np.int64), z["pred"], "p12c", None
     d = common.load_pred(Path(path), verify=True); hh = d["meta"].get("hp_hash"); assert hh, f"{path}: no hp_hash in meta"
@@ -84,7 +84,7 @@ def iid_se(sr_ann: float, n: int) -> float:
 def evaluate(pred_paths: dict[str, Path], tag: str, out: Path | None = None, aims: list[str] | None = None, drift: bool = False, p12c: bool = False, cell: str | None = None) -> dict:
     """pred_paths: {'W': npz, 'M': npz, 'Q': npz} in the common prediction format. aims: optional subset of AIM_NAMES (smoke runs only). p12c=True reads key-less P12c caches (regression only)."""
     if p12c:
-        for q_ in pred_paths.values(): assert Path(q_).resolve().is_relative_to((common.ML_MEETING / "p12_cache").resolve()), f"--p12c may only read files under reports/ml_meeting/p12_cache, not {q_}"
+        for q_ in pred_paths.values(): assert Path(q_).resolve().is_relative_to((common.ML_RESULTS / "p12_cache").resolve()), f"--p12c may only read files under results/p12_cache, not {q_}"
     else: require_gate()   # A10: no P13 book before the orchestrator opens the gate (the key-less P12c regression is exempt)
     for h in common.HORIZONS: assert h in pred_paths, f"missing horizon {h}"
     base = ["firm", "date", "cik", "target_mi", "y_raw", "in_liq", "raw_vol_63", "raw_beta_252", "raw_log_dv_63"]
@@ -203,7 +203,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--tag", default=None); ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
     if a.p12c:
-        paths = {h: common.ML_MEETING / "p12_cache" / f"p12c_{h}.npz" for h in common.HORIZONS}; a.cell = a.cell or "P12C"
+        paths = {h: common.ML_RESULTS / "p12_cache" / f"p12c_{h}.npz" for h in common.HORIZONS}; a.cell = a.cell or "P12C"
     else:
         if not a.cell: ap.error("--cell is required unless --p12c")
         seed = "mean" if a.pred == "mean" else (int(a.pred.lstrip("s")) if a.pred.lstrip("s").isdigit() else a.pred)

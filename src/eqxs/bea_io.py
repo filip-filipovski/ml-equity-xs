@@ -1,7 +1,6 @@
 """BEA input-output use tables and the SIC -> NAICS -> BEA crosswalks (keyless).
 
-Sources (fetched by ``scripts/ingest/ingest_bea_io.py fetch``; see
-``docs/LINK_DATA_SOURCES.md``):
+Sources (fetched by ``scripts/ingest_bea_io.py fetch``):
 
 * BEA ``AllTablesIO.zip`` (16.3 MB) and ``AllTablesSUP.zip`` (20.4 MB), static files of
   the Industry Economic Accounts. ``IOUse_Before_Redefinitions_PRO_1997-2023_Summary.xlsx``
@@ -44,7 +43,7 @@ import pandas as pd
 
 from eqxs.data_zones import EQUITIES_ZONES_PATH, safe_load_parquet, sealed_start
 
-REPO: Final[Path] = Path(__file__).resolve().parents[3]
+REPO: Final[Path] = Path(__file__).resolve().parents[2]
 BEA_ROOT: Final[Path] = REPO / "data_cache" / "links" / "bea"
 RAW_DIR: Final[Path] = BEA_ROOT / "raw"
 USE_ROOT: Final[Path] = BEA_ROOT / "use_summary"
@@ -610,7 +609,7 @@ def load_use_summary(*, start: pd.Timestamp | str | None = None,
     from eqxs.sec_eightk_items import _utc, year_partitions
 
     if not root.exists():
-        raise FileNotFoundError(f"{root} missing - run scripts/ingest/ingest_bea_io.py build")
+        raise FileNotFoundError(f"{root} missing - run scripts/ingest_bea_io.py build")
     s, e = _utc(start), _utc(end)
     sealed = None if (allow_sealed and unlock_token) else sealed_start(zone_config)
     frames = []

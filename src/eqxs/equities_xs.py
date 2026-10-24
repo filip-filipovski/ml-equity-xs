@@ -1,8 +1,7 @@
 """US equity cross-section from free, keyless sources (adapters, parsers, loaders).
 
-Everything lives under ``data_cache/equities_xs/`` (``data_cache`` is a symlink into
-the external-SSD image). Producer: ``scripts/ingest/ingest_equities_xs.py``.
-Report: ``reports/research/US_EQUITY_XS_DATASET_2026-10-10.md``.
+Everything lives under ``data_cache/equities_xs/`` (``data_cache`` may be a symlink to
+bulk storage). Producer: ``scripts/ingest_equities_xs.py``.
 
 Sources (what actually worked on 2026-10-10, $0, no accounts, no e-mail anywhere)
 --------------------------------------------------------------------------------
@@ -39,7 +38,6 @@ Sources (what actually worked on 2026-10-10, $0, no accounts, no e-mail anywhere
   ``links/customer_supplier/``), the Insider Transactions data sets
   (``raw/sec_bulk/insider/`` -> ``insider/transactions/`` + ``insider/monthly/``) and
   the EDGAR full-index ``master.gz`` per quarter (``raw/sec_bulk/full_index/``).
-  Report: ``reports/research/SEC_BULK_UNLOCK_2026-10-11.md``.
 
 Not obtained: **Stooq** (``robots.txt`` is ``User-agent: * / Disallow: /`` and
 ``/db/h/`` is behind a JavaScript proof-of-work bot wall -> skipped, not circumvented),
@@ -89,7 +87,7 @@ from eqxs.data_zones import EQUITIES_ZONES_PATH, safe_load_parquet, sealed_start
 
 logger = logging.getLogger(__name__)
 
-_PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parents[3]
+_PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 XS_ROOT: Final[Path] = _PROJECT_ROOT / "data_cache" / "equities_xs"
 RAW_ROOT: Final[Path] = XS_ROOT / "raw"
 
@@ -1617,7 +1615,7 @@ def attach_insider_acceptance(t: pd.DataFrame, accepted: pd.DataFrame | None) ->
     """Set ``accepted`` / ``ts_source`` / ``ts`` on insider rows from an ``adsh,
     accepted`` (UTC) map. ``ts`` = the earlier of two upper bounds on the true
     acceptance: the submissions-JSON stamp (never early, but late by the ET UTC offset on
-    a minority of filings -- see ``reports/research/SEC_BULK_UNLOCK_2026-10-11.md``) and
+    a minority of filings) and
     22:00 ET of the filing date; unmatched rows get the bound."""
     t = t.drop(columns=[c for c in ("accepted", "ts_source", "ts") if c in t.columns])
     if accepted is not None and len(accepted):
@@ -1816,7 +1814,7 @@ def _load_partitioned(root: Path, key: str, *, intent: str, columns: Sequence[st
                       start: pd.Timestamp | str | None = None,
                       end: pd.Timestamp | str | None = None) -> pd.DataFrame:
     if not root.exists():
-        raise FileNotFoundError(f"{root} missing - run scripts/ingest/ingest_equities_xs.py")
+        raise FileNotFoundError(f"{root} missing - run scripts/ingest_equities_xs.py")
     frames = []
     s, e = _utc(start), _utc(end)
     for f in _zoned_files(root, key, unlock_token=unlock_token if allow_sealed else None,

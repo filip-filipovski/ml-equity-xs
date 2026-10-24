@@ -28,7 +28,9 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\pct}{\,\%}
 \newcommand{\bps}{\,\mathrm{bps}}
-\newcommand{\fittab}[1]{\resizebox{\textwidth}{!}{\input{#1}}}
+% Shrink a table to the text width only when it is wider; never enlarge it.
+\newsavebox{\fittabbox}
+\newcommand{\fittab}[1]{\sbox{\fittabbox}{\input{#1}}\ifdim\wd\fittabbox>\textwidth\resizebox{\textwidth}{!}{\usebox{\fittabbox}}\else\usebox{\fittabbox}\fi}
 \setlength{\parskip}{2pt}
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 \setlength{\floatsep}{6pt plus 2pt minus 2pt}

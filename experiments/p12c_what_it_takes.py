@@ -15,8 +15,9 @@ from __future__ import annotations
 import json, math, sys
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 PER = 52; DECL = {"ALL": 15, "LIQ": 5, "TOP500": 2}; LADDER = (1, 2, 5, 15); TARGET = 1.5
-ev = json.loads((HERE / "p12c_eval.json").read_text()); cells = ev["cells"]; selected = ev["selected"]["cell"]
+ev = json.loads((RESULTS / "p12c_eval.json").read_text()); cells = ev["cells"]; selected = ev["selected"]["cell"]
 def arith(s: dict, decl_bps: int) -> dict:
     gs, ga, to = s["gross_sharpe"], s["gross_ann"], s["turnover_per_week"]
     if abs(gs) < 1e-9 or to <= 0: return {"skip": True}
@@ -68,4 +69,4 @@ out["summary"] = summ
 lines += ["", f"cells where some positive cost gives net 1.5: dev {len(summ['cells_with_positive_cost_for_net15']['dev'])}, chk {len(summ['cells_with_positive_cost_for_net15']['chk'])} (of {len(ok)})",
           f"largest break-even cost: dev {summ['max_breakeven_bps']['dev'][0]:.1f} bps ({summ['max_breakeven_bps']['dev'][1]}), chk {summ['max_breakeven_bps']['chk'][0]:.1f} bps ({summ['max_breakeven_bps']['chk'][1]})",
           f"smallest IC multiple for net 1.5 at the declared cost: dev {summ['ic_multiple_least_dev']:.1f}x ({least['dev']}), chk {summ['ic_multiple_least_chk']:.1f}x ({least['chk']}), both windows {summ['ic_multiple_least_both']:.1f}x ({both})"]
-txt = "\n".join(lines); print(txt); (HERE / "p12c_what_it_takes.json").write_text(json.dumps(out, indent=1, default=float)); (HERE / "p12c_what_it_takes.log").write_text(txt + "\n")
+txt = "\n".join(lines); print(txt); (RESULTS / "p12c_what_it_takes.json").write_text(json.dumps(out, indent=1, default=float)); (RESULTS / "p12c_what_it_takes.log").write_text(txt + "\n")

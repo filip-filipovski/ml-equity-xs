@@ -15,23 +15,23 @@ sources are not used (Stooq: robots.txt disallows all agents; SEC www.sec.gov an
 
 Subcommands (run in this order; each is idempotent, ``--resume`` skips finished work):
 
-    poetry run python scripts/ingest/ingest_equities_xs.py nasdaq
-    poetry run python scripts/ingest/ingest_equities_xs.py stooq          # records the skip
-    poetry run python scripts/ingest/ingest_equities_xs.py yfinance --resume
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-universe
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-fetch --resume   # hours
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-build      # offline parse
-    poetry run python scripts/ingest/ingest_equities_xs.py ff
-    poetry run python scripts/ingest/ingest_equities_xs.py fred
-    poetry run python scripts/ingest/ingest_equities_xs.py stats          # pre-2022 stats JSON
+    python scripts/ingest_equities_xs.py nasdaq
+    python scripts/ingest_equities_xs.py stooq          # records the skip
+    python scripts/ingest_equities_xs.py yfinance --resume
+    python scripts/ingest_equities_xs.py sec-universe
+    python scripts/ingest_equities_xs.py sec-fetch --resume   # hours
+    python scripts/ingest_equities_xs.py sec-build      # offline parse
+    python scripts/ingest_equities_xs.py ff
+    python scripts/ingest_equities_xs.py fred
+    python scripts/ingest_equities_xs.py stats          # pre-2022 stats JSON
 
 SEC www.sec.gov bulk data sets (2026-10-11; every sec.gov request carries the declared
 contact User-Agent ``xs.SEC_USER_AGENT``, authorised by the author):
 
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-bulk-fetch --inventory-only
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-bulk-fetch --workers 2
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-links-build --workers 6
-    poetry run python scripts/ingest/ingest_equities_xs.py sec-insider-build --workers 6
+    python scripts/ingest_equities_xs.py sec-bulk-fetch --inventory-only
+    python scripts/ingest_equities_xs.py sec-bulk-fetch --workers 2
+    python scripts/ingest_equities_xs.py sec-links-build --workers 6
+    python scripts/ingest_equities_xs.py sec-insider-build --workers 6
 
 ``--dry-run`` prints what would be fetched without any network call.
 
@@ -55,13 +55,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from fetch_scheduled_event_calendars import OVERRIDES as STAGE1_OVERRIDES  # noqa: E402
-from update_earnings_calendar import UNIVERSE_OVERRIDES  # noqa: E402
-
 from eqxs import equities_xs as xs  # noqa: E402
 from eqxs.earnings_calendar import (  # noqa: E402
     CSV_COLUMNS,
@@ -78,15 +73,28 @@ SEALED_NAIVE = SEALED.tz_localize(None)
 EARNINGS_SINCE = "2004-01-01"   # equities TRAIN start; 8-K items exist from 2004-08
 PAGES_SINCE = "2004-01-01"
 
+# Pre-announcements that are not the scheduled quarterly report (public record, decided
+# from the filing list before any return was computed; see the sidecar).
+STAGE1_OVERRIDES = {
+    "0000320193-19-000002": "AAPL 2019-01-02 letter to investors: revenue-guidance cut (unscheduled "
+                            "pre-announcement; the scheduled Q1 FY19 report is the 2019-01-29 8-K)",
+    "0001045810-19-000004": "NVDA 2019-01-28 revenue-guidance cut (unscheduled pre-announcement; the "
+                            "scheduled Q4 FY19 report is the 2019-02-14 8-K)",
+}
+# Public-record pre-announcements decided from the filing list (no returns computed),
+# in addition to the stage-1 overrides.
+UNIVERSE_OVERRIDES = {
+    "NVDA:2022-08-08": "NVDA 2022-08-08 preliminary Q2 FY23 revenue release (unscheduled "
+                       "pre-announcement; the scheduled report is the 2022-08-24 8-K)",
+}
+
 
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
 def _guard_volume() -> None:
-    dc = REPO / "data_cache"
-    target = dc.resolve()
-    if not str(target).startswith("/") or not target.exists():
-        raise SystemExit(f"data_cache -> {target}: external data volume not mounted; refusing to write")
+    """Make sure the cache directory exists before anything is written (``data_cache`` may be a symlink)."""
+    (REPO / "data_cache").resolve().mkdir(parents=True, exist_ok=True)
 
 
 def _status_update(key: str, **kw: Any) -> None:
@@ -1050,7 +1058,7 @@ def _sub_acceptance() -> pd.DataFrame:
 
 LINKS_SCHEMA = """# customer_supplier links (Financial Statement and Notes data sets)
 
-Producer: `scripts/ingest/ingest_equities_xs.py sec-links-build` from
+Producer: `scripts/ingest_equities_xs.py sec-links-build` from
 `raw/sec_bulk/fsds_notes/*.zip` (SEC DERA Financial Statement and Notes data sets,
 quarterly 2009q2-2025q3, monthly 2025-10+). Partitioned `quarter=YYYYqN` by the calendar
 quarter of `ts` (quarters align with the equities sealed start, 2024-07-01 since the
@@ -1107,7 +1115,7 @@ is in company_tickers; otherwise `ambiguous`.
 
 INSIDER_SCHEMA = """# insider (SEC Insider Transactions data sets, Forms 3/4/5)
 
-Producer: `scripts/ingest/ingest_equities_xs.py sec-insider-build` from
+Producer: `scripts/ingest_equities_xs.py sec-insider-build` from
 `raw/sec_bulk/insider/*_form345.zip` (quarterly, 2006q1+; each zip = filings FILED in
 that quarter). Two tables, both partitioned `quarter=YYYYqN` by the calendar quarter of
 `ts` (aligned with the quarter-aligned equities sealed start).

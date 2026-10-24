@@ -1,9 +1,7 @@
 """Calendar-time equity event studies (earnings-announcement premium, PEAD, announcement delay).
 
-Pure functions used by ``scripts/validate/equity_earnings_xs_train.py`` (study 11,
-``reports/diagnostic/equity_earnings_xs_train.md``) and
-``scripts/validate/equity_announcement_delay_train.py`` (study 12,
-``reports/diagnostic/equity_announcement_delay_train.md``). Nothing here reads data: callers
+Pure functions used by the earnings-announcement studies (study 11, EAP / PEAD, and
+study 12, announcement delay). Nothing here reads data: callers
 pass session calendars, return matrices and event tables built from the
 ``eqxs.equities_xs`` loaders.
 
@@ -21,7 +19,7 @@ Conventions
   turnover and net: the same gross, charged only for names entering (their new weight)
   and leaving (their drifted weight). An implementable book's cost lies between the two.
 
-Red-team fixes (``reports/redteam/EQUITY_EVENTS_MACHINERY_FIXES_2026-10-10.md``). Each
+Red-team fixes (2026-10-10). Each
 behaviour change has a new default and a named legacy option that reproduces studies 11
 and 12 as run:
 

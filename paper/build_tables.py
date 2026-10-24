@@ -414,7 +414,7 @@ def build_all(selftest_only=False):
     S = wit["summary"]
 
     def wrow(case, cell, w, rec):
-        return [case, pretty_cell(cell), w, tex_num(rec["gross_sharpe"], 2), pct(rec["sigma_ann"], 1),
+        return [f"{case}, {w}", pretty_cell(cell), tex_num(rec["gross_sharpe"], 2), pct(rec["sigma_ann"], 1),
                 tex_num(rec["turns_per_year"], 1), str(rec["declared_bps"]), tex_num(rec["breakeven_bps"], 1),
                 tex_num(rec["gross_needed_for_net15_at_declared"], 2), tex_num(rec["ic_multiple_needed"], 2)]
 
@@ -433,11 +433,11 @@ def build_all(selftest_only=False):
     rows.append(("MULTI",
                  f"Cells where a positive cost would give net 1.5: dev {nd}, chk {nc}. "
                  f"Max ladder reproduction error: {wit['ladder_check_max_abs_err']:.4f} Sharpe. "
-                 f"$\\sigma$ = annualised book volatility; $\\kappa$ = first-order IC multiple needed."))
+                 f"$\\sigma$ = annualised book volatility; $c_d$ declared, $\\hat c$ break-even cost per side; $S_g^{{need}}$ = gross SR needed for net 1.5 at $c_d$; $\\kappa$ = first-order IC multiple needed."))
     write("tab_what_it_takes.tex", render(
-        "llllrrrrrr",
-        ["Case & Cell & Window & gross SR & $\\sigma$ ann.\\ \\% & turns/yr & declared bps & break-even bps & gross SR needed & $\\kappa$"],
-        rows, 10))
+        "llrrrrrrr",
+        ["Case, window & Cell & gross SR & $\\sigma$ \\% & turns/yr & $c_d$ bps & $\\hat c$ bps & $S_g^{need}$ & $\\kappa$"],
+        rows, 9))
 
     # ---- 5. precision -----------------------------------------------------
     PS = prec["summary"]

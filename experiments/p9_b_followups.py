@@ -17,6 +17,7 @@ import json, math, sys
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9, p9_b_wfa_oneshot as PB, p10_books as BK  # noqa (PB patches the panel loader)
 from eqxs import equity_ml as ml
 from eqxs import equities_xs as xs
@@ -34,7 +35,7 @@ frame = pd.DataFrame({"tmi": panel.tmi[rows], "firm": panel.firm[rows], "y": pan
                       "beta": df["raw_beta_252"].to_numpy(np.float64)[rows], "pred": pred})
 sic_cols = list(ml.SIC_COLS)
 for c in sic_cols: frame[c] = panel.X[rows, panel.col_ix[c]]
-(HERE / "p9_cache").mkdir(exist_ok=True); frame.to_parquet(HERE / "p9_cache" / "p9_b_c1_frame_2009_2023.parquet")
+(RESULTS / "p9_cache").mkdir(exist_ok=True); frame.to_parquet(RESULTS / "p9_cache" / "p9_b_c1_frame_2009_2023.parquet")
 log(f"frame {len(frame):,} rows, tmi {frame.tmi.min()}..{frame.tmi.max()} ({frame.tmi.nunique()} months)")
 
 # ---- monthly rank IC (all names) -------------------------------------------------------------------------------------
@@ -137,7 +138,7 @@ cohort_out = {"cohort_first_tmi": t0, "cohort_n_firms": len(cohort), "cohort_ic_
               "cohort_trend": trend(ic_c), "entrants_trend": trend(ic_e[ic_e.index >= 2010 * 12]), "all_trend": trend(icm),
               "eras_cohort": [float(np.mean([by_year(ic_c)[y] for y in r])) for r in (range(2009, 2014), range(2014, 2019), range(2019, 2024))],
               "eras_all": [float(np.mean([by_year(icm)[y] for y in r])) for r in (range(2009, 2014), range(2014, 2019), range(2019, 2024))]}
-try: cohort_out["liquid_half"] = json.load(open(HERE / "p9_b_liq_trend.json"))
+try: cohort_out["liquid_half"] = json.load(open(RESULTS / "p9_b_liq_trend.json"))
 except Exception: pass
 log(f"COHORT firms present at first 2009 formation: {len(cohort):,}; cohort IC by year {dict((y, round(v, 3)) for y, v in cohort_out['cohort_ic_by_year'].items())}")
 log(f"COHORT trend slope {cohort_out['cohort_trend']['slope_per_year']:+.4f}/yr NW12 t {cohort_out['cohort_trend']['nw12_t']:+.2f} | eras cohort {[round(v, 3) for v in cohort_out['eras_cohort']]} vs all {[round(v, 3) for v in cohort_out['eras_all']]} | all-names trend t {cohort_out['all_trend']['nw12_t']:+.2f} | entrants trend t {cohort_out['entrants_trend']['nw12_t']:+.2f}")
@@ -147,4 +148,4 @@ out = {"design": "C1 (28 features, price-filtered), M2 fixed booster, WFA panel 
        "attribution": attrib, "pass_probability": passp, "prior_update": prior, "composition": cohort_out,
        "ic_by_year_all": by_year(icm), "ic_monthly_2009_2023": {str(int(k)): float(v) for k, v in icm.items()},
        "decile_net_monthly": {str(int(k)): float(v) for k, v in rd.items()}}
-(HERE / "p9_b_followups.json").write_text(json.dumps(out, indent=1, default=float)); log("wrote p9_b_followups.json")
+(RESULTS / "p9_b_followups.json").write_text(json.dumps(out, indent=1, default=float)); log("wrote p9_b_followups.json")

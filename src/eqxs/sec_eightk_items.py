@@ -46,7 +46,7 @@ import pandas as pd
 
 from eqxs.data_zones import EQUITIES_ZONES_PATH, safe_load_parquet, sealed_start
 
-REPO: Final[Path] = Path(__file__).resolve().parents[3]
+REPO: Final[Path] = Path(__file__).resolve().parents[2]
 SUBMISSIONS_DIR: Final[Path] = REPO / "data_cache" / "equities_xs" / "raw" / "sec" / "submissions"
 EIGHTK_ROOT: Final[Path] = REPO / "data_cache" / "equities_xs" / "events" / "eightk_items"
 
@@ -340,7 +340,7 @@ def load_eightk_items(*, start: pd.Timestamp | str | None = None,
     ANY of these item codes. Without ``allow_sealed`` + token, no partition ending after
     the equities sealed start is opened."""
     if not root.exists():
-        raise FileNotFoundError(f"{root} missing - run scripts/ingest/build_eightk_items.py")
+        raise FileNotFoundError(f"{root} missing - run scripts/build_eightk_items.py")
     s, e = _utc(start), _utc(end)
     sealed = None if (allow_sealed and unlock_token) else sealed_start(zone_config)
     frames = []

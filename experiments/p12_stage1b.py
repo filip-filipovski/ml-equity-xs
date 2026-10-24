@@ -8,11 +8,12 @@ import json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9  # noqa: E402
 import p12_books as PB  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 D = P9.TL.CACHE / "equities_xs" / "derived"; P9.PANEL_PATH = D / "ml_panel_wfa2024.parquet"; P9.META_PATH = D / "ml_panel_wfa2024.meta.json"
-CACHE = HERE / "p12_cache"; LAST = PB.LAST
+CACHE = RESULTS / "p12_cache"; LAST = PB.LAST
 panel = P9.Panel(); assert panel.sealed_load_count == 0; panel.valid = panel.valid & (panel.tmi <= LAST)
 df = P9.TL.train_load(P9.PANEL_PATH, "p12 stage1b frame"); assert len(df) == panel.n
 assert str(pd.to_datetime(df["date"])[panel.valid].max())[:10] < "2023-01-01"
@@ -79,4 +80,4 @@ for cid in cells:
                 log(f"{cid + ' ' + bid:<38}{d['gross_sharpe']:>8.2f}{d['net_sharpe']:>8.2f}{d['net_ann']*100:>8.1f}{d['maxdd']*100:>6.0f}{d['turnover_per_month']:>6.2f}{d['resid_gross_sharpe']:>7.2f} | {c['gross_sharpe']:>8.2f}{c['net_sharpe']:>8.2f}{c['maxdd']*100:>6.0f}")
 best = max(((cid, bid, m["dev"]["gross_sharpe"], m["dev"]["net_sharpe"]) for cid, bb in out["cells"].items() for bid, m in bb.items()), key=lambda x: x[2])
 out["best_dev_gross"] = best; out["max_formation_date_used"] = str(pd.to_datetime(df["date"])[panel.valid].max())[:10]; out["sealed_load_count"] = int(panel.sealed_load_count)
-(HERE / "p12_stage1b.json").write_text(json.dumps(out, indent=1, default=float)); log("best development gross:", best, "| wrote p12_stage1b.json")
+(RESULTS / "p12_stage1b.json").write_text(json.dumps(out, indent=1, default=float)); log("best development gross:", best, "| wrote p12_stage1b.json")

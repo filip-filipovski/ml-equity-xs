@@ -8,11 +8,12 @@ import json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9  # noqa: E402
 import p12_books as PB  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 D = P9.TL.CACHE / "equities_xs" / "derived"; P9.PANEL_PATH = D / "ml_panel_wfa2024.parquet"; P9.META_PATH = D / "ml_panel_wfa2024.meta.json"
-CACHE = HERE / "p12_cache"; LAST = PB.LAST; E = P9.TL.CACHE / "links" / "edges"
+CACHE = RESULTS / "p12_cache"; LAST = PB.LAST; E = P9.TL.CACHE / "links" / "edges"
 panel = P9.Panel(); assert panel.sealed_load_count == 0; panel.valid = panel.valid & (panel.tmi <= LAST)
 df = P9.TL.train_load(P9.PANEL_PATH, "p12 stage2 frame"); assert len(df) == panel.n
 assert str(pd.to_datetime(df["date"])[panel.valid].max())[:10] < "2023-01-01"
@@ -105,4 +106,4 @@ else:
     t0 = time.time(); res = P9.fit_predict_cell(panel, X2, cols2, refits, "M2"); pred2 = np.concatenate([res["pred"][y] for y in years]); np.savez_compressed(cf, pred=pred2); log("G2 refit %.0f s" % (time.time() - t0))
 out["G2"]["peer4_M2"] = report("G2 M2 + SIC4-peer means (8)", cube.pred_matrix(pred2))
 out["sealed_load_count"] = int(panel.sealed_load_count); out["max_formation_date_used"] = str(pd.to_datetime(df["date"])[panel.valid].max())[:10]
-(HERE / "p12_stage2.json").write_text(json.dumps(out, indent=1, default=float)); log("wrote p12_stage2.json")
+(RESULTS / "p12_stage2.json").write_text(json.dumps(out, indent=1, default=float)); log("wrote p12_stage2.json")

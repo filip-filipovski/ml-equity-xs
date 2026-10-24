@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 sys.path.insert(0, str(HERE))
 import p9_ml_capacity as P9  # noqa: E402
 import p9_e6_fresh_window as E6  # noqa: E402  (PX_FEATS, read_cell)
@@ -24,7 +25,7 @@ from eqxs.equities_xs import EQUITIES_ZONES_PATH  # noqa: E402
 D = P9.TL.CACHE / "equities_xs" / "derived"
 YEARS_WFA = [2023]  # B3: the straddling 2024 partitions are refused whole by the zone rule -> 2023 only (11 months)
 YEARS_E6 = [2019, 2020, 2021, 2022]
-OUT = HERE / "p9_b_wfa.json"
+OUT = RESULTS / "p9_b_wfa.json"
 SEALED = pd.Timestamp("2024-07-01", tz="UTC")
 COST = 0.0015
 

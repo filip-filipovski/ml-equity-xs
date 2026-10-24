@@ -7,9 +7,10 @@ import glob, json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p12_books as PB  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
-G = Path("data_cache/equities_xs/derived/eqml_grid"); RUNS = G / "eqml14_runs"
+G = (HERE.parent / "data_cache/equities_xs/derived/eqml_grid"); RUNS = G / "eqml14_runs"
 pw = pd.read_parquet(G / "panel_W.parquet"); sic_cols = [c for c in pw.columns if c.startswith("sic_")]
 pw = pw[["firm", "date", "target_mi", "y_raw", "in_liq", "raw_vol_63", "raw_beta_252"] + sic_cols]; assert str(pd.to_datetime(pw["date"]).max())[:10] < "2019-01-01"
 pw["date"] = pd.to_datetime(pw["date"]).dt.tz_localize(None); tm = pw["target_mi"].to_numpy(); pred = np.full(len(pw), np.nan)
@@ -54,4 +55,4 @@ for kind in ("vsn", "vs"):
             log(f"{cid:<22}{m['gross_sharpe']:>6.2f}{m['gross_ann']*100:>8.1f}{m['turnover_per_week']:>7.2f} | {m['net_2bps']['sharpe']:.2f} / {m['net_5bps']['sharpe']:.2f} / {m['net_15bps']['sharpe']:.2f} / {m['net_25bps']['sharpe']:.2f} | {dc['ann']*100:+.1f} | {dc['maxdd']*100:.0f} %")
 best = max(res["cells"].items(), key=lambda kv: kv[1][f"net_{kv[1]['declared_cost_bps']}bps"]["sharpe"])
 res["best_dev_net_declared_cost"] = {"cell": best[0], **best[1][f"net_{best[1]['declared_cost_bps']}bps"]}
-(HERE / "p12_stage3b.json").write_text(json.dumps(res, indent=1, default=float)); log("best dev net at declared cost:", res["best_dev_net_declared_cost"], "| wrote p12_stage3b.json")
+(RESULTS / "p12_stage3b.json").write_text(json.dumps(res, indent=1, default=float)); log("best dev net at declared cost:", res["best_dev_net_declared_cost"], "| wrote p12_stage3b.json")

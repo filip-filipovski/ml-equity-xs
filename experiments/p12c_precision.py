@@ -12,9 +12,10 @@ from __future__ import annotations
 import json, math
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 PER = 52; TARGET = 1.5; Z95 = 1.96
 DECL = {"ALL": 15, "LIQ": 5, "TOP500": 2}
-ev = json.loads((HERE / "p12c_eval.json").read_text())
+ev = json.loads((RESULTS / "p12c_eval.json").read_text())
 def uni_of(cid: str) -> str: return cid.split("_")[-2]
 def moments(sr_ann: float, ann: float, n: int) -> tuple[float, float]:
     """weekly mean and sd (ddof=1) recovered from the stored annualised Sharpe and annual mean."""
@@ -74,4 +75,4 @@ lines += [f"selected {sel}: dev net {S['dev']['net_declared']['sharpe']:.2f} ± 
           f"cells (of {len(out['cells'])}) whose pooled net 95 % upper limit reaches 1.5: {len(up15)}; reaches 1.0: {len(up10)} {up10}; pooled GROSS upper limit reaches 1.5: {len(gross_up15)} {gross_up15}",
           f"highest pooled net: {maxp} {mp['sharpe']:.2f} ± {mp['se_iid']:.2f} (+{mp['ann']*100:.1f} %/yr), z to 1.5 {mp['z_to_target']:.1f}; smallest z to 1.5 (pooled net): {minz} z {mz['z_to_target']:.1f} (SR {mz['sharpe']:.2f} ± {mz['se_iid']:.2f})"]
 txt = "\n".join(lines); print(txt)
-(HERE / "p12c_precision.json").write_text(json.dumps(out, indent=1)); (HERE / "p12c_precision.log").write_text(txt + "\n"); print("wrote p12c_precision.json / .log")
+(RESULTS / "p12c_precision.json").write_text(json.dumps(out, indent=1)); (RESULTS / "p12c_precision.log").write_text(txt + "\n"); print("wrote p12c_precision.json / .log")

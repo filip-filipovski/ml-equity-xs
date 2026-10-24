@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""P13 compact status (< 40 lines) and reports/diagnostic/p13_gnn/STATE.json. `status.py --json` prints the JSON only.
+"""P13 compact status (< 40 lines) and results/gnn/STATE.json. `status.py --json` prints the JSON only.
 
 Reads: QUEUE/*/ (job counts, running jobs), LOGS/*.log (last line, `MODEL .* trained` count), PREDS (seed / mean files),
 RESULTS/{cell}_{h}_mean_ic.json (else mean of {cell}_{h}_s*_ic.json) with dev / check IC (flat keys dev_ic/chk_ic|check_ic, or nested

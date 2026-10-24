@@ -6,12 +6,13 @@ import json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9  # noqa: E402
 import p10_books as BK  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 D = P9.TL.CACHE / "equities_xs" / "derived"; P9.PANEL_PATH = D / "ml_panel_wfa2024.parquet"; P9.META_PATH = D / "ml_panel_wfa2024.meta.json"
 DEV = (2009 * 12, 2018 * 12 + 11); CHK = (2019 * 12, 2022 * 12 + 11); LAST = 2022 * 12 + 11
-frame = pd.read_parquet(HERE / "p9_cache" / "p9_b_c1_frame_2009_2023.parquet")
+frame = pd.read_parquet(RESULTS / "p9_cache" / "p9_b_c1_frame_2009_2023.parquet")
 frame = frame[frame["tmi"] <= LAST].reset_index(drop=True); assert frame["tmi"].max() <= LAST
 sic_cols = [c for c in frame.columns if c.startswith("sic_")]
 pan = P9.TL.train_load(P9.PANEL_PATH, "p12 stage0 vol columns")[["target_mi", "firm", "raw_vol_63", "raw_log_dv_63", "date"]]
@@ -122,4 +123,4 @@ for kind, k, liq, cost in (("vsn", 3, False, 0.0015), ("vsn", 3, True, 0.0005), 
     d, c = mt["dev"], mt["chk"]; log(f"{cid:<26}{d['gross_sharpe']:>8.2f}{d['net_sharpe']:>8.2f}{d['net_ann']*100:>9.1f}{d['maxdd']*100:>7.0f}{d['turnover_per_month']:>7.2f} | {c['gross_sharpe']:>8.2f}{c['net_sharpe']:>8.2f}{c['net_ann']*100:>9.1f}{c['maxdd']*100:>7.0f}")
 best = max(((cid, m["dev"]["gross_sharpe"]) for cid, m in res["cells"].items()), key=lambda x: x[1])
 res["best_dev_gross"] = {"cell": best[0], "gross_sharpe": best[1]}
-(HERE / "p12_stage0.json").write_text(json.dumps(res, indent=1, default=float)); log("best development GROSS Sharpe", best, "| wrote p12_stage0.json")
+(RESULTS / "p12_stage0.json").write_text(json.dumps(res, indent=1, default=float)); log("best development GROSS Sharpe", best, "| wrote p12_stage0.json")

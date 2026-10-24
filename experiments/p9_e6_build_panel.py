@@ -14,8 +14,9 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 sys.path.insert(0, str(HERE))
-import _train_loader as TL  # noqa: E402  (src/ + scripts/validate on sys.path)
+import _train_loader as TL  # noqa: E402  (src/ on sys.path)
 
 from eqxs import equity_ml as ml  # noqa: E402
 
@@ -23,7 +24,7 @@ REPO = TL.ROOT
 TRAIN_END_2023 = pd.Timestamp("2023-01-01")
 STUDY13_DROPPED_TAGS = ["cost_of_revenue"]
 STUDY13_DROPPED_FEATURES = ["gp"]
-OUT = HERE / "p9_e6_build.json"
+OUT = RESULTS / "p9_e6_build.json"
 
 
 def log(msg: str) -> None:
@@ -31,7 +32,7 @@ def log(msg: str) -> None:
 
 
 def load_builder():
-    spec = importlib.util.spec_from_file_location("eqml_builder", REPO / "scripts" / "validate" / "equity_ml_xs_train.py")
+    spec = importlib.util.spec_from_file_location("eqml_builder", REPO / "scripts" / "equity_ml_xs_train.py")
     mod = importlib.util.module_from_spec(spec)
     sys.modules["eqml_builder"] = mod
     spec.loader.exec_module(mod)
@@ -166,7 +167,7 @@ def main() -> None:
                 "wfa_rows_2023_2024": int((new["date"] >= pd.Timestamp("2023-01-01")).sum()),
                 "pre2023_vs_train2023_panel": {kk: int(v) for kk, v in m.items()},
                 "build_seconds": meta["build_seconds"], "feature_drop_as_built": built_drop}
-        (HERE / f"p9_b_build{suffix}.json").write_text(json.dumps(outp, indent=1, default=str))
+        (RESULTS / f"p9_b_build{suffix}.json").write_text(json.dumps(outp, indent=1, default=str))
         log(f"WFA panel: {len(new):,} rows, max ts {new['ts'].max()}, WFA rows {outp['wfa_rows_2023_2024']:,}; "
             f"pre-2023 membership vs train2023 panel: {m}")
         return
@@ -181,7 +182,7 @@ def main() -> None:
                 "extra_rows_nopx": int(len(new) - len(px)), "new_panel_max_ts": str(new["ts"].max()),
                 "build_seconds": meta["build_seconds"], "feature_drop_as_built": built_drop,
                 "loader_log": TL.LOADER_LOG[-2:]}
-        (HERE / "p9_e6_build_nopx.json").write_text(json.dumps(outp, indent=1, default=str))
+        (RESULTS / "p9_e6_build_nopx.json").write_text(json.dumps(outp, indent=1, default=str))
         log(f"nopx: {len(new):,} rows vs px {len(px):,}; px rows missing from nopx {int(missing)} (must be 0); "
             f"extra {len(new) - len(px):,}")
         assert missing == 0

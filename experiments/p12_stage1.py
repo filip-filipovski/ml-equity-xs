@@ -9,11 +9,12 @@ import json, math, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
 import p9_ml_capacity as P9  # noqa: E402
 import p12_books as PB  # noqa: E402
 log = lambda *a: print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 D = P9.TL.CACHE / "equities_xs" / "derived"; P9.PANEL_PATH = D / "ml_panel_wfa2024.parquet"; P9.META_PATH = D / "ml_panel_wfa2024.meta.json"
-CACHE = HERE / "p12_cache"; CACHE.mkdir(exist_ok=True)
+CACHE = RESULTS / "p12_cache"; CACHE.mkdir(exist_ok=True)
 QUICK = "--quick" in sys.argv
 LAST = PB.LAST
 panel = P9.Panel(); assert panel.sealed_load_count == 0
@@ -88,4 +89,4 @@ for tname, tgt in TARGETS.items():
         log(f"{cid:<26} IC(ret) dev {ic_y['dev']['mean']:+.4f} (t {ic_y['dev']['t']:.1f}) chk {ic_y['chk']['mean']:+.4f} | ICIR-ann dev {ic_y['dev']['icir_ann']:.2f} chk {ic_y['chk']['icir_ann']:.2f} | "
             f"vsn_k3 ALL dev gSR {gv(b,'dev','gross_sharpe'):.2f} nSR {gv(b,'dev','net_sharpe'):.2f} ({gv(b,'dev','net_ann')*100:+.1f}%/yr, DD {gv(b,'dev','maxdd')*100:.0f}%) chk nSR {gv(b,'chk','net_sharpe'):.2f} | LIQ dev nSR {gv(bl,'dev','net_sharpe'):.2f} chk {gv(bl,'chk','net_sharpe'):.2f} | {time.time()-t0:.0f}s")
 out["sealed_load_count"] = int(panel.sealed_load_count); out["max_formation_date_used"] = str(pd.to_datetime(df["date"])[panel.valid].max())[:10]
-(HERE / ("p12_stage1_quick.json" if QUICK else "p12_stage1.json")).write_text(json.dumps(out, indent=1, default=float)); log("wrote p12_stage1.json")
+(RESULTS / ("p12_stage1_quick.json" if QUICK else "p12_stage1.json")).write_text(json.dumps(out, indent=1, default=float)); log("wrote p12_stage1.json")

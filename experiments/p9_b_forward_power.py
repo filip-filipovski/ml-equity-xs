@@ -11,7 +11,8 @@ import numpy as np
 from scipy import stats
 
 HERE = Path(__file__).resolve().parent
-f = json.load(open(HERE / "p9_b_followups.json"))
+RESULTS = HERE.parent / "results"; RESULTS.mkdir(exist_ok=True)
+f = json.load(open(RESULTS / "p9_b_followups.json"))
 icm = {int(k): v for k, v in f["ic_monthly_2009_2023"].items()}
 ret = {int(k): v for k, v in f["decile_net_monthly"].items()} if isinstance(f.get("decile_net_monthly"), dict) else None
 # tmi = months since 1970 (2009-01 = 24108). 2009-01..2022-12 = 24108..24275
@@ -68,4 +69,4 @@ for sr in sr_grid:
     out["sharpe_months_needed"].append(row)
     log(f"SR {sr:<4} n80 {n80:>5} mo ({n80/12:5.1f} y)  n90 {n90:>5} mo ({n90/12:5.1f} y)  boot n80 {row.get('n80_boot_grid')}  power@12/36/60 mo " +
         (" / ".join(f"{100*row['boot_power_by_n'][n]:.0f}%" for n in (12, 36, 60)) if ret is not None else "-"))
-(HERE / "p9_b_forward_power.json").write_text(json.dumps(out, indent=1, default=float)); log("wrote p9_b_forward_power.json")
+(RESULTS / "p9_b_forward_power.json").write_text(json.dumps(out, indent=1, default=float)); log("wrote p9_b_forward_power.json")

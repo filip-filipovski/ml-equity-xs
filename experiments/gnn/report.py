@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """P13 RESULTS.md renderer. JSON reads only (ic / books / dic / ls / SELECTION jsons, trainer log line counts); never opens a panel or a prediction file.
-Regenerates reports/diagnostic/p13_gnn/RESULTS.md and figures/p13_books.png from scratch on every run. Every number is read from a JSON; a missing file renders as "pending".
+Regenerates results/gnn/RESULTS.md and figures/p13_books.png from scratch on every run. Every number is read from a JSON; a missing file renders as "pending".
 CLI: report.py [--out PATH]."""
 from __future__ import annotations
 import argparse, datetime as dt, json, re, subprocess, sys
@@ -97,7 +97,7 @@ def title_claim(rows: list[dict]) -> str:
 
 
 def p12c_ref() -> dict | None:
-    j = _j(Path(common.ML_MEETING) / "p12c_eval.json")
+    j = _j(Path(common.ML_RESULTS) / "p12c_eval.json")
     if not j or not j.get("selected"): return None
     s = j["selected"]; return {"cell": s["cell"], "dev": s["dev"], "chk": s["chk"], "dev_gross": s.get("dev_gross_sharpe"), "chk_gross": s.get("chk_gross_sharpe")}
 

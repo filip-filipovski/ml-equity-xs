@@ -5,20 +5,20 @@ Every P13 script imports this module and nothing else defines a path, a rule or 
 Zones: the panels end 2022-12 (TRAIN); nothing here opens a sealed partition. Never pd.read_parquet a price file.
 """
 from __future__ import annotations
-import hashlib, json, os, re, sys
+import hashlib, json, re
 from functools import lru_cache
 from pathlib import Path
 import numpy as np, pandas as pd
 
-REPO = Path(__file__).resolve().parents[3]
-DATA = Path(os.environ.get("EQXS_DATA_CACHE", "data_cache"))
+REPO = Path(__file__).resolve().parents[2]
+DATA = REPO / "data_cache"
 PANELS = DATA / "equities_xs" / "derived" / "eqml_grid_2023"          # panel_{W,M,Q}.parquet + .meta.json, aux_daily.npz
 EDGES = DATA / "links" / "edges"                                        # e1_sic_membership, e4_customer_supplier_edges, e5_bea_use_edges, e5_sic4_bea_map
 ROOT = DATA / "studies" / "p13_gnn"
 GRAPHS, PREDS, RESULTS, QUEUE, LOGS = ROOT / "graphs", ROOT / "preds", ROOT / "results", ROOT / "queue", ROOT / "logs"
-REPORTS = REPO / "reports" / "diagnostic" / "p13_gnn"
-ML_MEETING = REPO / "reports" / "ml_meeting"                            # p12_books.py, p12_stage1b_lib.py, p12c_eval.py, p12_cache/
-PYBIN = sys.executable
+REPORTS = REPO / "results" / "gnn"                                      # RESULTS.md, STATE.json, SELECTION.json, figures/
+EXPERIMENTS = REPO / "experiments"                                      # p12_books.py, p12_stage1b_lib.py, p12c_eval.py (importable modules)
+ML_RESULTS = REPO / "results"                                           # p12c_eval.json, p12_cache/ (written by the P12c scripts)
 REGISTRY = Path(__file__).resolve().parent / "registry.json"           # committed list of allowed hyperparameter hashes (A7 v)
 
 HORIZONS = ("W", "M", "Q")
@@ -200,17 +200,14 @@ def load_pred(path: Path, verify: bool = True) -> dict:
 
 
 def p12c_rows(h: str) -> np.ndarray:
-    """The P12c row set per horizon (reports/ml_meeting/p12_cache/p12c_{h}.npz) — the universe every P13 cell must predict exactly."""
-    return np.load(ML_MEETING / "p12_cache" / f"p12c_{h}.npz", allow_pickle=False)["rows"].astype(np.int64)
+    """The P12c row set per horizon (results/p12_cache/p12c_{h}.npz) — the universe every P13 cell must predict exactly."""
+    return np.load(ML_RESULTS / "p12_cache" / f"p12c_{h}.npz", allow_pickle=False)["rows"].astype(np.int64)
 
 
 # ---- job queue format ---------------------------------------------------------------------------------------------------
 # QUEUE / f"{status}" / f"{job_id}.json", status in {pending, running, done, failed}; job = {"id", "kind": "train"|"books"|"diag"|"graphs",
 # "cell", "horizon", "seed", "priority", "cmd": [argv], "requires": [paths], "created", "started", "finished", "exit", "log"}.
-# Transitions are atomic renames between the status directories; runner.py holds ROOT / "runner.lock" (mkdir lock) while it runs.
+# Transitions are atomic renames between the status directories.
 def job_dirs() -> dict[str, Path]:
     return {s: QUEUE / s for s in ("pending", "running", "done", "failed")}
 
-
-def py_argv(script: str, *args: str) -> list[str]:
-    return [PYBIN, "-u", str(Path(__file__).resolve().parent / script), *map(str, args)]
