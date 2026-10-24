@@ -11,10 +11,10 @@ XGBoost \citep{chenguestrin2016} fits $\hat y^{(k)}=\hat y^{(k-1)}+\eta f_k$ by 
 \mathcal L^{(k)}\approx\sum_i\Big[g_if_k(x_i)+\tfrac12h_if_k(x_i)^2\Big]+\gamma T+\tfrac12\lambda\sum_{j=1}^T w_j^2,\qquad
 w_j^\star=-\frac{G_j}{H_j+\lambda},
 \end{equation}
-$G_j,H_j$ the sums over leaf $j$; a split needs $H\ge$ \texttt{min\_child\_weight} in both children, which under squared error ($h_i=1$) means a row count. The fixed booster: depth 3, $\eta=0.05$, 300 rounds, row and column subsampling 0.8, \texttt{min\_child\_weight} 100, 64-bin histograms, library defaults for $\lambda,\gamma$, no grid, no early stopping. The earlier, selected version chose among eight settings with up to 2000 rounds and early stopping on validation IC.
+$G_j,H_j$ the sums over leaf $j$; a split needs $H\ge$ \texttt{min\_child\_weight} in both children, which under squared error ($h_i=1$) means a row count. The fixed booster has depth 3, $\eta=0.05$, 300 rounds, row and column subsampling 0.8, \texttt{min\_child\_weight} 100 and 64-bin histograms, uses the library defaults for $\lambda,\gamma$, and has no grid and no early stopping. The earlier, selected version chose among eight settings with up to 2000 rounds and early stopping on validation IC.
 
 \paragraph{Pairwise rank objective.}
-The same trees with the pairwise logistic loss $\sum_{(i,j):\,y_i>y_j}\log(1+e^{-(\hat y_i-\hat y_j)})$ within each date \citep{burges2005}, eight sampled pairs per row. Its hessians are small: a \texttt{min\_child\_weight} copied from the squared-error grid forbids every split and returns a constant (Appendix~\ref{app:pitfalls}); the fixed version uses 1.
+This variant fits the same trees to the pairwise logistic loss $\sum_{(i,j):\,y_i>y_j}\log(1+e^{-(\hat y_i-\hat y_j)})$ within each date \citep{burges2005}, with eight sampled pairs per row. Its hessians are small, so a \texttt{min\_child\_weight} copied from the squared-error grid forbids every split and returns a constant (Appendix~\ref{app:pitfalls}); the fixed version uses 1.
 
 \paragraph{Feed-forward network (NN3).}
 Following \citet{gkx2020}, with $h^0=x$,
@@ -29,7 +29,7 @@ One date is one set: $X_t\in\R^{N_t\times67}$ is the sequence, with no positiona
 H\leftarrow H+\mathrm{MHA}(\mathrm{LN}(H)),\qquad H\leftarrow H+\mathrm{FFN}(\mathrm{LN}(H)),\qquad
 \mathrm{head}_a=\mathrm{softmax}\Big(\frac{Q_aK_a^\top}{\sqrt{16}}\Big)V_a,
 \end{equation}
-$\hat y_t=\mathrm{Linear}(\mathrm{LN}(H^{(2)}))$: each firm's score depends on every firm of its date. MSE per date, at most 3000 firms per date in training, Adam $10^{-3}$, at most 20 epochs, patience 3, mean of five seeds.
+and $\hat y_t=\mathrm{Linear}(\mathrm{LN}(H^{(2)}))$, so each firm's score depends on every firm of its date. It is trained on MSE per date with Adam at $10^{-3}$, at most 3000 firms per date, at most 20 epochs and patience 3, and the score is the mean of five seeds.
 
 \paragraph{Rank-mean ensemble and composites.}
 The ensemble averages the within-date ranks of eq.~\eqref{eq:rank} of its components. Composites $c_{i,t}=\frac1{|F|}\sum_{f\in F}s_f\tilde x_{i,f,t}$ with no fitted magnitudes serve as benchmarks: (a)~23 characteristics with literature signs fixed before any number was read, (b)~the textbook five (momentum $+$, book-to-market $+$, size $-$, profitability $+$, issuance $-$), (c)~signs re-estimated each year from months up to $12Y-2$.
@@ -37,15 +37,15 @@ The ensemble averages the within-date ranks of eq.~\eqref{eq:rank} of its compon
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig_pipeline}
-\caption{The pipeline. (a)~Each formation date is one cross-section: the ranked characteristics of eq.~\eqref{eq:rank} are the node input, the label of eq.~\eqref{eq:yraw} is the within-date rank of the next-period return and never travels along an edge. (b)~The four relations of Table~\ref{tab:relations} define directed edges $j\to i$. Two layers of eq.~\eqref{eq:sage} (or eq.~\eqref{eq:gat}) give a two-hop receptive field: layer~1 aggregates the features of the in-neighbours $N_r(i)$, layer~2 aggregates their layer-1 states, so a firm $k$ two edges away reaches $\hat y_i$ through $h^{(1)}_j$. (c)~Scores are compared by paired $\Delta\IC$ with the identical network without edges (C0) and with the four-relation network C2 trained on rewired edges (C4), and become a book through eqs.~\eqref{eq:norm}--\eqref{eq:partial}.}
+\caption{The pipeline. (a)~Each formation date is one cross-section: the ranked characteristics of eq.~\eqref{eq:rank} are the node input, the label of eq.~\eqref{eq:yraw} is the within-date rank of the next-period return and never travels along an edge. (b)~The four relations of Table~\ref{tab:relations} define directed edges $j\to i$. Two layers of eq.~\eqref{eq:sage} (or eq.~\eqref{eq:gat}) give a two-hop receptive field: layer~1 aggregates the features of the in-neighbours $N_r(i)$, layer~2 aggregates their layer-1 states, so a firm $k$ two edges away reaches $\hat y_i$ through $h^{(1)}_j$. (c)~Scores are compared by paired $\Delta\IC$ with the identical network without edges (C0) and with the four-relation network C2 trained on rewired edges (C4), and become a book through eqs.~\eqref{eq:norm} to~\eqref{eq:partial}.}
 \label{fig:pipeline}
 \end{figure}
 
 \paragraph{Graph networks.}
-Figure~\ref{fig:pipeline} sketches the pipeline. Node input is $x_i\in\R^{67}$ with the 28 rank columns scaled by $\sqrt{12}$ (unit variance for a uniform on $[-\frac12,\frac12]$). Hidden width 64, two layers, dropout 0.1, four heads. A relation $r$ gives, per date, directed edges $j\to i$ with weight $w^r_{ij}$ over the firms present; $N_r(i)$ is the set of sources into $i$. Seven cells:
+Figure~\ref{fig:pipeline} sketches the pipeline. Node input is $x_i\in\R^{67}$ with the 28 rank columns scaled by $\sqrt{12}$ (unit variance for a uniform on $[-\frac12,\frac12]$). The networks have two layers of hidden width 64 and dropout 0.1, and the attention cell uses four heads. A relation $r$ gives, per date, directed edges $j\to i$ with weight $w^r_{ij}$ over the firms present; $N_r(i)$ is the set of sources into $i$. There are seven cells.
 \begin{description}[style=nextline,leftmargin=1.5em]
-\item[C0, MLP (baseline).] $h^{(l)}=\mathrm{Drop}(\mathrm{ReLU}(W_lh^{(l-1)}+b_l))$, $l=1,2$; $\hat y_i=w^\top h^{(2)}+b$. Same features, loop, epochs and seeds as every graph cell.
-\item[C0g, aggregates.] The same MLP on $[x_i,\ \{\bar x^r_i\}_{r=1}^4,\ \{\log(1+\deg_r(i))\}_{r=1}^4]\in\R^{339}$, $\bar x^r_i$ the weighted neighbour mean of eq.~\eqref{eq:sage}: graph information as fixed features.
+\item[C0, MLP (baseline).] $h^{(l)}=\mathrm{Drop}(\mathrm{ReLU}(W_lh^{(l-1)}+b_l))$, $l=1,2$; $\hat y_i=w^\top h^{(2)}+b$. It uses the same features, training loop, epochs and seeds as every graph cell.
+\item[C0g, aggregates.] The same MLP on $[x_i,\ \{\bar x^r_i\}_{r=1}^4,\ \{\log(1+\deg_r(i))\}_{r=1}^4]\in\R^{339}$, $\bar x^r_i$ the weighted neighbour mean of eq.~\eqref{eq:sage}, so graph information enters as fixed features.
 \item[C1, C2, relational GraphSAGE-mean] \citep{hamilton2017,schlichtkrull2018}:
 \begin{equation}\label{eq:sage}
 h_i^{(l+1)}=\mathrm{Drop}\Big(\mathrm{ReLU}\Big(W_s^{(l)}h_i^{(l)}+b^{(l)}+\sum_r W_r^{(l)}\frac1{\max(1,|N_r(i)|)}\sum_{j\in N_r(i)}w^r_{ij}\,h^{(l)}_j\Big)\Big),

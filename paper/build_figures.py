@@ -58,7 +58,7 @@ def plain_cell(name):
 # ---------------------------------------------------------------- figure 0 (schematic)
 from matplotlib.patches import FancyBboxPatch, Circle  # noqa: E402
 
-REL_COL = {"E1 SIC4": "#0072B2", "E4 customer–supplier": "#D55E00", "E5 BEA input–output": "#009E73", "CORR return correlation": "#CC79A7"}
+REL_COL = {"E1 SIC4": "#0072B2", "E4 customer-supplier": "#D55E00", "E5 BEA input-output": "#009E73", "CORR return correlation": "#CC79A7"}
 
 
 def _box(ax, x, y, w, h, text, fc="#F4F4F4", ec="0.3", fs=6.1, bold=False):
@@ -179,7 +179,7 @@ def fig_cost_frontier():
     ev = bt.load_json("eval")
     cells, sel = ev["cells"], ev["selected"]["cell"]
     fig, axes = plt.subplots(1, 2, figsize=(W_IN, 3.2), sharey=False)
-    for ax, w, ttl in ((axes[0], "dev", "Development 2009–2018"), (axes[1], "chk", "Check 2019–2022")):
+    for ax, w, ttl in ((axes[0], "dev", "Development 2009-2018"), (axes[1], "chk", "Check 2019-2022")):
         xs, ys = [], []
         for c, rec in cells.items():
             fam, _, uni, _ = bt.parse_cell(c)
@@ -292,8 +292,8 @@ def fig_p13_dic():
     ax.set_xlabel("Δ rank IC vs C0 (demeaned basis), bars = ±1.96 SE recovered from t")
     ax.set_ylabel("cell and horizon")
     ax.grid(axis="x", alpha=0.25, lw=0.4)
-    ax.legend(handles=[Line2D([], [], marker="o", ls="-", c="#0072B2", ms=4.5, label="development 2009–2018"),
-                       Line2D([], [], marker="o", ls="-", c="#D55E00", mfc="white", ms=4.5, label="check 2019–2022")],
+    ax.legend(handles=[Line2D([], [], marker="o", ls="-", c="#0072B2", ms=4.5, label="development 2009-2018"),
+                       Line2D([], [], marker="o", ls="-", c="#D55E00", mfc="white", ms=4.5, label="check 2019-2022")],
               loc="upper right", frameon=False, fontsize=6.8)
     fig.tight_layout()
     save(fig, "fig_p13_dic.pdf")

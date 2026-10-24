@@ -338,14 +338,14 @@ def build_all(selftest_only=False):
     hz = {"W": "weekly", "M": "monthly", "Q": "quarterly"}
     for h in "WMQ":
         r = refit[h]
-        rows.append([r"dev 2009--2018", hz[h], "fixed booster (P12c)",
+        rows.append([r"dev 2009-2018", hz[h], "fixed booster (P12c)",
                      tex_num(r["ic_dev_mean"], 3, True), tex_num(r["ic_dev_t"], 1), str(r["n_dev_periods"])])
-        rows.append([r"check 2019--2022", hz[h], "fixed booster (P12c)",
+        rows.append([r"check 2019-2022", hz[h], "fixed booster (P12c)",
                      tex_num(r["ic_chk_mean"], 3, True), tex_num(r["ic_chk_t"], 1), str(r["n_chk_periods"])])
     rows.append("MID")
     for lab, key, nm in (("booster", "M2", "fixed booster (E6)"), ("ridge control", "M1", "ridge-all control (E6)")):
         s = e6[key]["stats_all"]
-        rows.append([r"E6 2019--2022", "monthly", nm, tex_num(s["mean"], 3, True),
+        rows.append([r"E6 2019-2022", "monthly", nm, tex_num(s["mean"], 3, True),
                      tex_num(s["t_month_iid"], 1), str(s["n_months"])])
     rows.append("MID")
     for key, nm in (("C1", "booster (hold-out)"), ("C0", "ridge-all control (hold-out)")):
@@ -392,14 +392,14 @@ def build_all(selftest_only=False):
                  f"$\\dagger$ = selected cell."))
     write("tab_p12c_cells.tex", render(
         "lrrrrrrrrr",
-        [r" & \multicolumn{4}{c}{Development 2009--2018} & \multicolumn{4}{c}{Check 2019--2022} &",
+        [r" & \multicolumn{4}{c}{Development 2009-2018} & \multicolumn{4}{c}{Check 2019-2022} &",
          r"\cmidrule(lr){2-5}\cmidrule(lr){6-9}",
          r"Cell & gross SR & net SR & ann.\ \% & MaxDD \% & gross SR & net SR & ann.\ \% & MaxDD \% & turnover/wk (dev)"],
         rows, 10))
 
     # ---- 3. cost ladder ---------------------------------------------------
     rows = []
-    for w, lab in (("dev", "dev 2009--2018"), ("chk", "check 2019--2022")):
+    for w, lab in (("dev", "dev 2009-2018"), ("chk", "check 2019-2022")):
         r = cells[sel_name][w]
         row = [lab, f"{tex_num(r['gross_sharpe'], 2)} ({pct(r['gross_ann'], 1, True)})"]
         for key, _ in COST_KEYS:
@@ -548,7 +548,7 @@ def build_all(selftest_only=False):
                 (dm, dt), (cm_, ct) = v
                 row.append(f"{tex_num(dm, 3, True)} ({tex_num(dt, 1, True)}) / {tex_num(cm_, 3, True)} ({tex_num(ct, 1, True)})")
         rows.append(row)
-    rows.append(("MULTI", "Cell values: dev 2009--2018 IC ($t$) / check 2019--2022 IC ($t$); seed means; naive per-formation $t$."))
+    rows.append(("MULTI", "Cell values: dev 2009-2018 IC ($t$) / check 2019-2022 IC ($t$); seed means; naive per-formation $t$."))
     write("tab_p13_ic.tex", render("llll", ["Cell & W & M & Q"], rows, 4))
 
     # ---- 10. P13 books ----------------------------------------------------
@@ -622,8 +622,8 @@ def build_all(selftest_only=False):
     rows = []
     for y in range(2009, 2024):
         ys = str(y)
-        win = ("dev 2009--2018" if y == 2009 else "") if y <= 2018 else (
-            "check 2019--2022" if y == 2019 else ("hold-out 2023" if y == 2023 else ""))
+        win = ("dev 2009-2018" if y == 2009 else "") if y <= 2018 else (
+            "check 2019-2022" if y == 2019 else ("hold-out 2023" if y == 2023 else ""))
         if y == 2019 or y == 2023:
             rows.append("MID")
         rows.append([win, ys, tex_num(c1["ic_by_year"][ys], 3, True), tex_num(c1b["ic_by_year"][ys], 3, True)])
@@ -650,12 +650,12 @@ def build_all(selftest_only=False):
     for y in chk_ys:
         rows.append([y, tex_num(icy[y], 3, True), pct(dec_py[y], 1, True), pct(neu_py[y], 1, True)])
     rows.append("MID")
-    rows.append(["mean, development 2009--2018", tex_num(ymean(icy, dev_ys), 3, True), pct(ymean(dec_py, dev_ys), 1, True), pct(ymean(neu_py, dev_ys), 1, True)])
-    rows.append(["mean, check 2019--2022", tex_num(ymean(icy, chk_ys), 3, True), pct(ymean(dec_py, chk_ys), 1, True), pct(ymean(neu_py, chk_ys), 1, True)])
+    rows.append(["mean, development 2009-2018", tex_num(ymean(icy, dev_ys), 3, True), pct(ymean(dec_py, dev_ys), 1, True), pct(ymean(neu_py, dev_ys), 1, True)])
+    rows.append(["mean, check 2019-2022", tex_num(ymean(icy, chk_ys), 3, True), pct(ymean(dec_py, chk_ys), 1, True), pct(ymean(neu_py, chk_ys), 1, True)])
     rows.append(["mean, check without 2020", tex_num(ymean(icy, ex20), 3, True), pct(ymean(dec_py, ex20), 1, True), pct(ymean(neu_py, ex20), 1, True)])
     rows.append([f"worst decile-book year ({worst_dec})", tex_num(icy[worst_dec], 3, True), pct(dec_py[worst_dec], 1, True), pct(neu_py[worst_dec], 1, True)])
     rows.append(("MULTI", "Yearly mean of the monthly rank IC of the fixed booster; calendar-year net return of the monthly decile "
-                          "long--short book (ALL, 15 bps per side) and of a full-breadth rank-weighted book made dollar-, beta- and "
+                          "long-short book (ALL, 15 bps per side) and of a full-breadth rank-weighted book made dollar-, beta- and "
                           "SIC-division-neutral and held in three overlapping monthly cohorts (ALL, 15 bps). Post-hoc split of a "
                           "pre-declared window; means are of yearly values."))
     write("tab_crisis.tex", render("lrrr", ["Year & rank IC & decile book net \\%/yr & neutral cohort book net \\%/yr"], rows, 4))
@@ -826,7 +826,7 @@ def build_all(selftest_only=False):
     N["PthirteenRefits"] = str(md["refits"]) if md["refits"] is not None else na("PthirteenRefits")
     N["PthirteenMaxAbsDicT"] = plain_num(max_dic_t, 1)
 
-    lines = ["% Auto-generated by paper/build_tables.py -- do not edit.\n"]
+    lines = ["% Auto-generated by paper/build_tables.py; do not edit.\n"]
     for k, v in N.items():
         assert re.fullmatch(r"[A-Za-z]+", k), k
         lines.append(f"\\newcommand{{\\num{k}}}{{{v}}}\n")
