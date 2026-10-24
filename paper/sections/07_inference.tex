@@ -1,0 +1,37 @@
+\section{Inference}\label{sec:infer}
+
+\paragraph{Rank information coefficient.}
+Per date, $\IC_d$ is the Spearman correlation between the prediction and $y^{ex}$ with average ranks on both sides; a date with a constant prediction contributes zero (a stable sort would otherwise rank the constant alphabetically and produce a spurious $\pm0.02$). Over $D$ dates,
+\begin{equation}\label{eq:ic}
+\overline{\IC}=\tfrac1D\sum_d \IC_d,\qquad t=\frac{\overline{\IC}}{s_{\IC}}\sqrt D,\qquad \mathrm{ICIR}=\overline{\IC}/s_{\IC}.
+\end{equation}
+The $t$ treats dates as independent (we call it the naive $t$); for the paired $\Delta\IC$ below, formation values are first averaged within calendar months; a cluster-robust version with refit years as clusters, $SE=\sqrt{\tfrac{G}{G-1}\sum_g S_g^2}/N$ with $S_g$ the within-cluster sum of deviations, is reported where the number of clusters allows.
+
+\paragraph{Paired $\Delta\IC$.}
+For cells $A$ and $B$ with seed-mean predictions, $\Delta_d=\IC_d(A)-\IC_d(B)$ on two bases: \emph{raw} (prediction against $y^{ex}$) and \emph{demeaned} (prediction and $y^{ex}$ both demeaned within the same SIC4 $\to$ SIC2 $\to$ division cascade as eq.~\eqref{eq:demean}, then Spearman). The demeaned basis asks whether the graph adds information \emph{within} industries, which is the only information the industry-neutral book can monetise. Windows are split by target year; the test is $t=\bar\Delta_{month}/(s_{month}/\sqrt{n_{months}})$ on monthly means.
+
+\paragraph{Sharpe-ratio uncertainty.}
+The iid standard error of an annualised Sharpe ratio estimated from $n$ weekly observations \citep{lo2002} is
+\begin{equation}\label{eq:se}
+SE(\widehat{\SR})=\sqrt{\frac{1+\widehat{\SR}_w^2/2}{n}}\sqrt{52},\qquad \widehat{\SR}_w=\widehat{\SR}/\sqrt{52},
+\end{equation}
+and a block bootstrap with circular 13-week blocks and 2000 draws gives a dependence-robust alternative (circular blocks; cf.\ the stationary bootstrap of \citealt{politisromano1994}; \citealt{ledoitwolf2008}). Two windows are pooled through the exact total-variance identity for the combined mean and variance. For monthly books a block bootstrap of the \emph{centred} series (1000 draws) gives $p=(\#\{\bar x^*\ge\bar x\}+1)/(B+1)$ and a minimum detectable effect $\mathrm{MDE}=P\,(q_{0.95}(\bar x^*)-q_{0.20}(\bar x^*))$, the annual return that the test would detect with 80\% power; a within-date permutation of the predictions through the same book code gives a second null, evaluated on the gross statistic because random books turn over more and would otherwise win on cost.
+
+\paragraph{Selection across trials.}
+The expected maximum of $N$ independent null Sharpe ratios with standard error $s$ is $\E[\max_{k\le N}s\,Z_k]$, simulated with 20{,}000 draws; it is the bar a selected best cell has to clear before it says anything. The deflated Sharpe ratio \citep{baileylopez2014} is computed as
+\begin{equation}\label{eq:dsr}
+\SR_0=\sqrt V\Big[(1-\gamma)\Phi^{-1}\big(1-\tfrac1N\big)+\gamma\,\Phi^{-1}\big(1-\tfrac1{Ne}\big)\Big],\qquad
+\mathrm{DSR}_i=\Phi\!\Bigg(\frac{(\widehat{sr}_i-sr_0)\sqrt{n_i-1}}{\sqrt{1-\hat\kappa_3\widehat{sr}_i+\tfrac{\hat\kappa_4-1}4\widehat{sr}_i^2}}\Bigg),
+\end{equation}
+with $\gamma$ the Euler--Mascheroni constant, $V$ the sample variance of the annualised net Sharpe ratios across the cells that ran, $N$ the declared count, $\widehat{sr}_i,sr_0$ per-period Sharpe ratios and $\hat\kappa_3,\hat\kappa_4$ the cell's sample skewness and non-excess kurtosis (3 for a normal series). Where several trials' return series are stored, the superior-predictive-ability test \citep{white2000,hansen2005} over all of them is the correctly sized correction; our calibration on synthetic series found $\mathrm{DSR}(N)$ conservative and SPA well sized, but SPA needs every trial's return series, and the 349-cell programme stored per-cell summaries, not return series.
+
+\paragraph{From information to Sharpe: the cost ladder and the IC multiple.}
+For a weekly cell with gross annual return $\mu_g$, gross Sharpe ratio $S_g$, weekly turnover $\tau_w$ and declared cost $c_d$ per side, the stored net Sharpe ratios at 1, 2, 5 and 15 bps are reproduced to within 0.02 by the identity
+\begin{equation}\label{eq:ladder}
+\sigma=\frac{\mu_g}{S_g},\qquad \mathrm{drag}(c)=52\,\tau_w\,c,\qquad \SR_{net}(c)=\frac{\mu_g-\mathrm{drag}(c)}{\sigma},\qquad \hat c=\frac{\mu_g}{52\,\tau_w},
+\end{equation}
+where $\hat c$ is the break-even cost. Inverting it gives the gross Sharpe ratio a cell would need for a net target $S^\star$ at its declared cost, and the ratio of that to its realised gross Sharpe ratio,
+\begin{equation}\label{eq:ic_mult}
+S_g^{need}=S^\star+\frac{52\,\tau_w\,c_d}{\sigma},\qquad \kappa=\frac{S_g^{need}}{S_g},
+\end{equation}
+which we call the IC multiple: to first order, at fixed construction, volatility and turnover, gross return scales with the information coefficient \citep{grinold1989,grinoldkahn2000}, so $\kappa$ is a first-order floor on the factor by which the information would have to grow (a floor, because the scaling holds at fixed construction and turnover only). Two consequences follow directly. If $S_g<S^\star$ in every cell, no cost level reaches the target, because $\SR_{net}(c)\le S_g$ for every $c\ge0$. And the ratio of the best realised gross Sharpe ratio to the zero-cost ICIR of the raw prediction is an ex-post analogue of the transfer coefficient of \citet{clarke2002}: the fraction of the information the construction turns into return. Factor exposures of the realised books are checked by yearly OLS of the daily spread on $[1,\text{Mkt-RF},\text{SMB},\text{HML},\text{MOM}]$ with Newey--West errors \citep{famafrench1993,carhart1997,neweywest1987}.

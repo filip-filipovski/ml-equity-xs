@@ -1,0 +1,13 @@
+data_cache/
+__pycache__/
+*.pyc
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+build.log
+results/p9_cache/
+results/p12_cache/

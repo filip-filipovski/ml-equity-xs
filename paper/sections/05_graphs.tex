@@ -1,0 +1,27 @@
+\section{Graphs and their nulls}\label{sec:graphs}
+
+\paragraph{Relations.}
+Four point-in-time relations are built as edge tables with validity intervals; an edge is used on date $d$ if and only if $\mathrm{valid\_from}\le d<\mathrm{valid\_to}$ (Table~\ref{tab:relations}). No neighbour's \emph{target} is ever aggregated; only neighbour features and hidden states pass along edges.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{The four relations. All edges are directed $j\to i$ and carry a weight $w_{ij}$; the signed relations store both directions and encode direction in the sign.}
+\label{tab:relations}
+\begin{tabular}{@{}p{2.1cm}p{9.6cm}p{3.0cm}@{}}
+\toprule
+Relation & Edge rule (as built) & Weight $w_{ij}$ \\
+\midrule
+E1 SIC4 & two firms whose filers share a four-digit SIC code on that date; in groups of more than 21 firms each firm samples 20 others & 1 \\
+E4 customer--supplier & (customer, supplier) pairs resolved from filing text with a point-in-time name resolver (precision 0.96 on 200 hand-checked edges), valid between filing dates & $+1$ customer$\to$supplier, $-1$ reverse \\
+E5 BEA input--output & firm SIC4 $\to$ BEA industry; industry pairs are the top-10 buyers of each seller and top-10 suppliers of each buyer in the BEA use table of year $\mathrm{year}(d)-2$; one direction per pair (the larger share); no within-industry edges; each firm samples at most 20 firms of neighbouring industries with probability proportional to share & $\pm$ share, supplier$\to$customer positive \\
+CORR & 252 sessions ending at $d$, returns minus the daily cross-sectional mean, pairwise correlation with at least 189 overlapping sessions; the $k=10$ most positively correlated firms point into each firm & correlation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Rewired-graph null.}
+The question ``does the topology carry information beyond what degree and group membership already carry'' is addressed by training the same network on graphs that preserve those nuisance quantities and destroy the specific pairing \citep{maslovsneppen2002}. One rewired table per relation is drawn for each seed and held fixed through time. \emph{E1}: whole SIC4 timelines are permuted among firms with the identical SIC2 timeline, so every firm-date keeps its SIC2 and the SIC4 group sizes are preserved approximately (about 12\% of firms keep their own label). \emph{E4}: degree-preserving double-edge swaps on the unique (customer, supplier) pairs within customer-SIC4 strata (falling back to SIC3, then SIC2), applied to all rows of a pair; realised swap shares are 0.30--0.39 per snapshot. \emph{E5}: the BEA use table is permuted within columns per data year, so each industry keeps its supplier count. \emph{CORR}: per firm and calendar year a fixed random ranking of the other firms ordered by stratum (SIC2 $\times$ beta tercile, then SIC2, division, any); on each date the in-neighbours are the best-ranked present firms, as many as the real in-degree, and the real sorted weights are reassigned. The correlation null therefore keeps in-degree, weight distribution, industry and beta composition, and randomises identity; the input--output null keeps each buying industry's column of shares.
+
+\paragraph{Label-shift diagnostic.}
+A model that has memorised firm identity, or that exploits a slowly varying firm attribute leaking through the features, predicts last year's label about as well as this year's. For each refit, every training row (firm $f$, formation $i$) is relabelled with $f$'s label at formation $i-K$ (else $i-K-1$, else $i-K+1$), $K=54/13/5$ for W/M/Q, valid only if that source window ended at least 366 days before the row's formation; rows with no valid source are dropped and nothing wraps around. The declared read rule: the signal ``persists under shift'' if the shifted development IC is positive, has $t\ge2$ and is at least half the real IC; a pass that persists would be relabelled ``not attributable to current information''.

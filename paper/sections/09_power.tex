@@ -1,0 +1,20 @@
+\section{Power and the sizing decision}\label{sec:power}
+
+A signal this small raises a practical question: how much forward data would confirm it at its own level? We answer it from the model's own monthly IC series over 2009--2022 (168 months; mean $\numICMeanTwentyTwo$, standard deviation $\numICSdTwentyTwo$, lag-one autocorrelation $\numICLagTwentyTwo$) and from the Sharpe-ratio standard error of eq.~\eqref{eq:se}. For a one-sided 5\% test of $H_0$: mean $\IC\le0$, the analytic sample for 80\% power at a true IC of 0.03 is $\numMonthsICThree$ months; to tell the 2019--2023 level (0.06) from the long-run level needs at least as many (a lower bound, since the long-run level is itself estimated); at a true IC of 0.06 the test needs $\numMonthsICSix$ months; six months of forward data have power $\numPowerSixMonthsICThree\pct$ and $\numPowerSixMonthsICSix\pct$ at the two levels. A block-bootstrap version of the same calculation (Table~\ref{tab:power}) agrees. For a book, confirming a Sharpe ratio of 0.3 against zero takes about $\numYearsSharpeThree$ years of monthly data and a Sharpe ratio of 1.0 about $\numYearsSharpeOne$ years (Figure~\ref{fig:power}).
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Forward sample needed to confirm the signal at its own noise. Panel A: one-sided 5\% test that the monthly rank IC is positive (or exceeds 0.03 for the level-change claim), months for 80\% and 90\% power from the analytic formula, and block-bootstrap power at 6, 12, 24, 60 and 120 months. Panel B: the same for a book's annualised Sharpe ratio against zero, bootstrapped from the 2009--2023 monthly decile long--short net series at 15 bps.}
+\label{tab:power}
+\input{tables/tab_power}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\textwidth]{fig_power}
+\caption{Power against forward months (log scale) for the IC claims (left) and for Sharpe-ratio levels (right); dashed line at 80\%. Block-3 bootstrap from the demeaned real series: the model's 2009--2022 monthly IC series (left) and its 2009--2023 monthly decile long--short net series at 15 bps (right).}
+\label{fig:power}
+\end{figure}
+
+The consequence is not that the signal is absent; it is that the property cannot be confirmed at its own Sharpe level on any horizon that matters for an allocation decision. A single strong year, such as 2023, moves the posterior mean by little against fourteen years whose books earn a Sharpe ratio of 0.1--0.2 (the monthly decile book $\numDecileSharpe$, $\numDecileAnn\pct$ per year, $\MaxDD$ $\numDecileDD\pct$, over 2009--2022). Sizing such a signal is therefore a prior decision about how much of a small, replicated but unconfirmed property one is willing to hold, not an estimate the data can deliver.

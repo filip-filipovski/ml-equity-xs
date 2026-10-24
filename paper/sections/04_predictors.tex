@@ -1,0 +1,70 @@
+\section{Predictors}\label{sec:models}
+
+All models map $x_{i,t}\in\R^{67}$ to a score $\hat y_{i,t}$ and are fitted to $y^{rank}$ unless stated. Where a library's convention differs from the textbook form, the form actually computed is given.
+
+\paragraph{Ridge.}
+$\hat\beta=\argmin_\beta\|y-b\mathbf 1-X\beta\|_2^2+\alpha\|\beta\|_2^2$ with an unpenalised intercept, $\alpha$ chosen on the validation slice. Two versions serve as controls: three columns (\texttt{mom\_12\_1}, \texttt{sue}, \texttt{log\_mcap}) and all 67.
+
+\paragraph{Gradient-boosted trees (fixed booster).}
+XGBoost \citep{chenguestrin2016} fits $\hat y^{(k)}=\hat y^{(k-1)}+\eta f_k$ by minimising, with $g_i,h_i$ the first and second derivatives of the loss at $\hat y^{(k-1)}_i$,
+\begin{equation}\label{eq:xgb}
+\mathcal L^{(k)}\approx\sum_i\Big[g_if_k(x_i)+\tfrac12h_if_k(x_i)^2\Big]+\gamma T+\tfrac12\lambda\sum_{j=1}^T w_j^2,\qquad
+w_j^\star=-\frac{G_j}{H_j+\lambda},
+\end{equation}
+$G_j=\sum_{i\in j}g_i$, $H_j=\sum_{i\in j}h_i$ over the rows in leaf $j$; a split is allowed only if both children have $H\ge$ \texttt{min\_child\_weight}. Under squared error $g_i=\hat y_i-y_i$ and $h_i=1$, so \texttt{min\_child\_weight} $=100$ means at least 100 rows per leaf. The fixed booster uses depth 3, $\eta=0.05$, 300 rounds, row and column subsampling 0.8, \texttt{min\_child\_weight} 100, histogram splits with 64 bins, and library defaults for $\lambda$ and $\gamma$; there is no grid and no early stopping. The earlier, selected version chose among eight settings with up to 2000 rounds and early stopping on validation IC.
+
+\paragraph{Pairwise rank objective.}
+The same trees with the pairwise logistic loss $\sum_{(i,j):\,y_i>y_j}\log(1+e^{-(\hat y_i-\hat y_j)})$ within each date \citep{burges2005}, eight sampled pairs per row. Its hessians are small, so a \texttt{min\_child\_weight} copied from the squared-error grid forbids every split and returns a constant (Appendix~\ref{app:pitfalls}); the fixed version uses 1.
+
+\paragraph{Feed-forward network (NN3).}
+Following \citet{gkx2020}, with $h^0=x$,
+\begin{equation}\label{eq:nn3}
+h^{l}=\mathrm{ReLU}\big(\mathrm{BN}(W_lh^{l-1}+b_l)\big),\ l=1,2,3\ (\text{widths }32,16,8),\qquad \hat y=w_4^\top h^3+b_4,
+\end{equation}
+trained on $\frac1B\sum_{i\in\text{batch}}(\hat y_i-y_i)^2+\lambda\sum_{l=1}^{4}\|W_l\|_1$ with Adam, batches of $10^4$, at most 100 epochs and patience 5 on validation IC; the chosen $(\lambda,\mathrm{lr})$ is completed to ten seeds and the prediction is their mean.
+
+\paragraph{Cross-sectional transformer.}
+One date is one set: $X_t\in\R^{N_t\times67}$ is the sequence, with no positional encoding, so the map is permutation-equivariant over firms \citep{vaswani2017}. $H^0=X_tW_{in}+b$ with $d_{model}=64$; for two pre-norm layers with four heads and feed-forward width 128,
+\begin{equation}\label{eq:attn}
+H\leftarrow H+\mathrm{MHA}(\mathrm{LN}(H)),\qquad H\leftarrow H+\mathrm{FFN}(\mathrm{LN}(H)),\qquad
+\mathrm{head}_a=\mathrm{softmax}\Big(\frac{Q_aK_a^\top}{\sqrt{16}}\Big)V_a,
+\end{equation}
+$\hat y_t=\mathrm{Linear}(\mathrm{LN}(H^{(2)}))\in\R^{N_t}$: each firm's score depends on every firm of its date. Loss is MSE per date, at most 3000 firms per date in training, Adam $10^{-3}$, at most 20 epochs, patience 3, mean of five seeds.
+
+\paragraph{Rank-mean ensemble and composites.}
+The ensemble is $\hat y^{ens}_{i,t}=\frac1K\sum_k\tilde z^{(k)}_{i,t}$ with each component first mapped by the within-date rank of eq.~\eqref{eq:rank}. As benchmarks without fitted magnitudes, composites $c_{i,t}=\frac1{|F|}\sum_{f\in F}s_f\tilde x_{i,f,t}$ use (a)~23 characteristics with literature signs fixed before any number was read, (b)~the textbook five (momentum $+$, book-to-market $+$, size $-$, profitability $+$, issuance $-$), (c)~signs re-estimated each year from months up to $12Y-2$, with no magnitudes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_pipeline}
+\caption{The pipeline. (a)~Each formation date is one cross-section: the ranked characteristics of eq.~\eqref{eq:rank} are the node input and the label of eq.~\eqref{eq:yraw} is the within-date rank of the next-period return, which never travels along an edge. (b)~The four point-in-time relations of Table~\ref{tab:relations} define directed edges $j\to i$. Two layers of eq.~\eqref{eq:sage} (or eq.~\eqref{eq:gat}) give every firm a two-hop receptive field: layer~1 aggregates the features of the in-neighbours $N_r(i)$, layer~2 aggregates their layer-1 states, which already contain the features of \emph{their} neighbours, so a firm $k$ two edges away reaches $\hat y_i$ through $h^{(1)}_j$. The question put to the data is whether what sits one and two hops away adds to a firm's own characteristics. (c)~The scores are compared by paired $\Delta\IC$ with the identical network without edges (C0) and with the four-relation network C2 trained on rewired edges (C4), and become a book through eqs.~\eqref{eq:norm}--\eqref{eq:partial}.}
+\label{fig:pipeline}
+\end{figure}
+
+\paragraph{Graph networks.}
+Figure~\ref{fig:pipeline} sketches the whole pipeline around the graph cells. Node input is $x_i\in\R^{67}$ with the 28 rank columns multiplied by $\sqrt{12}$ (a uniform on $[-\frac12,\frac12]$ has standard deviation $1/\sqrt{12}$). Hidden width 64, two layers, dropout 0.1, four heads. A relation $r$ gives, for each date, directed edges $j\to i$ with weight $w^r_{ij}$ over the firms present; $N_r(i)$ is the set of sources into $i$. Seven cells are compared.
+\begin{description}[style=nextline,leftmargin=1.5em]
+\item[C0, MLP (baseline).] $h^{(l)}=\mathrm{Drop}(\mathrm{ReLU}(W_lh^{(l-1)}+b_l))$, $l=1,2$; $\hat y_i=w^\top h^{(2)}+b$. Same features, loop, epochs and seeds as every graph cell: the control against which each $\Delta\IC$ is measured.
+\item[C0g, aggregates.] The same MLP on $[x_i,\ \{\bar x^r_i\}_{r=1}^4,\ \{\log(1+\deg_r(i))\}_{r=1}^4]\in\R^{339}$, where $\bar x^r_i$ is the weighted neighbour mean of eq.~\eqref{eq:sage}: graph information as fixed features, not learned messages.
+\item[C1, C2, relational GraphSAGE-mean] \citep{hamilton2017,schlichtkrull2018}:
+\begin{equation}\label{eq:sage}
+h_i^{(l+1)}=\mathrm{Drop}\Big(\mathrm{ReLU}\Big(W_s^{(l)}h_i^{(l)}+b^{(l)}+\sum_r W_r^{(l)}\frac1{\max(1,|N_r(i)|)}\sum_{j\in N_r(i)}w^r_{ij}\,h^{(l)}_j\Big)\Big),
+\end{equation}
+$\hat y_i=w^\top h_i^{(2)}+b$. Edge weights enter the message; the divisor is the unweighted in-degree; a node without in-edges in a relation contributes zero. C1 uses the three economic relations (E1, E4, E5 of Table~\ref{tab:relations}); C2 adds the return-correlation graph.
+\item[C3, relational graph attention] \citep{velickovic2018}: for relation $r$, $g_j=W_rh_j\in\R^{64}$ is split into four head blocks $g^{(q)}_j\in\R^{16}$ with learned vectors $\mathbf a^{src}_{r,q},\mathbf a^{dst}_{r,q}\in\R^{16}$,
+\begin{equation}\label{eq:gat}
+\begin{aligned}
+e^{(q)}_{ij}&=\mathrm{LeakyReLU}_{0.2}\big({\mathbf a^{src}_{r,q}}^{\!\top} g^{(q)}_j+{\mathbf a^{dst}_{r,q}}^{\!\top} g^{(q)}_i\big),\qquad
+\alpha^{(q)}_{ij}=\frac{\exp e^{(q)}_{ij}}{\sum_{k\in N_r(i)}\exp e^{(q)}_{ik}},\\
+z_i&=W_sh_i+b+\sum_r\big\Vert_{q=1}^{4}\sum_{j\in N_r(i)}\alpha^{(q)}_{ij}g^{(q)}_j,
+\end{aligned}
+\end{equation}
+then $h'_i=\mathrm{Drop}(\mathrm{ReLU}(z_i))$. The attention ignores $w_{ij}$, so the signed relations become undirected in C3.
+\item[C4, rewired null.] C2 trained on the rewired edge tables of Section~\ref{sec:graphs}: the graph-contribution null.
+\item[C5, temporal.] Per firm a GRU \citep{cho2014} (input 68 = 67 features plus a presence mask, hidden 64) runs over the last twelve snapshots; its final state is the node input of eq.~\eqref{eq:sage}.
+\end{description}
+For each refit year $Y$ and seed $s\in\{0,1,2\}$ a fresh model (seed $1000s+Y$) minimises, one date snapshot per Adam step,
+\begin{equation}\label{eq:p13loss}
+L_t=\frac1{|\mathcal S_t|}\sum_{i\in\mathcal S_t}(\hat y_i-y^{rank}_{i,t})^2,\qquad\text{Adam, lr }10^{-3},\ \text{weight decay }10^{-5},\ 15\text{ epochs},
+\end{equation}
+over the training firms $\mathcal S_t$ with a finite target on date $t$, dates shuffled each epoch; no early stopping and no validation-based choice. Predictions of the three seeds are averaged, and all ICs and books use the mean.

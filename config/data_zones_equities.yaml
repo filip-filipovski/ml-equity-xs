@@ -1,0 +1,35 @@
+# Three-zone data discipline — EQUITIES variant (added 2026-06-19).
+#
+# Equities have decades of history, so the TRAIN window is long and spans
+# multiple full regimes (dot-com bust tail, GFC, ZIRP bull, COVID, 2022
+# rate shock). Same discipline as the crypto zones: discovery + tuning
+# confined to TRAIN; WFA_STAGE is a visible-but-never-tuned second gate;
+# SEALED_TEST is the only honest OOS buffer and must not be loaded during
+# discovery (tripwire-enforced).
+#
+# Original split points (2026-06-19 .. 2026-10-10; superseded, see below):
+#   TRAIN  2004-01-01 -> 2019-01-01  discovery never saw COVID or the 2022 shock.
+#   WFA    2019-01-01 -> 2022-01-01  COVID crash + recovery as the walk-forward gate.
+#   SEALED 2022-01-01 -> 2026-06-01  2022 bear + 2023-26 regime, out-of-sample.
+#
+# FRAMEWORK CHANGE 2026-10-11 (owner decision; logged in FRAMEWORK.md,
+# "Framework change 2026-10-11: equities zones").
+#   Reason: the news track (config/data_zones_news.yaml: TRAIN 2018-01 -> 2023-01,
+#   WFA 2023-01 -> 2024-07, sealed from 2024-07-01) reads equity prices through
+#   2024-06, so the former equities sealed window 2022-01 -> 2024-07 is spent.
+#   All equity studies now share the news-track bounds below:
+#   TRAIN  2004-01-01 -> 2023-01-01  ~19y discovery (GFC, COVID, 2022 bear).
+#   WFA    2023-01-01 -> 2024-07-01  18-month one-shot gate.
+#   SEALED 2024-07-01 -> 2026-06-01  ~23 months sealed OOS, never read.
+#   Studies 11-14 (eqxs, eqdelay, eqml, eqgrid) were run under the PREVIOUS
+#   bounds (TRAIN to 2019-01-01, sealed from 2022-01-01); their verdicts stand
+#   as run and are not re-graded.
+
+zones:
+  train:       {start: "2004-01-01", end: "2023-01-01"}   # ~19y discovery (incl. GFC, COVID, 2022)
+  wfa_stage:   {start: "2023-01-01", end: "2024-07-01"}   # 18m one-shot gate
+  sealed_test: {start: "2024-07-01", end: "2026-06-01"}   # ~23m sealed OOS
+
+discipline:
+  sealed_until: "fully_locked_config"
+  wfa_until:    "train_only_gates_passed"

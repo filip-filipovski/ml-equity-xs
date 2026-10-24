@@ -1,0 +1,118 @@
+\section{Results}\label{sec:results}
+
+Every Sharpe ratio below is accompanied by its annualised return and maximum drawdown; every number in the tables is generated from the stored result files (Appendix~\ref{app:repro}).
+
+\subsection{The information is real, small and replicates}\label{sec:res_info}
+
+Table~\ref{tab:ic_windows} reports the fixed booster's rank IC by window and horizon. On the panels rebuilt through 2022 the weekly IC is $\numICWeeklyDev$ ($t=\numICWeeklyDevT$) on development and $\numICWeeklyChk$ ($t=\numICWeeklyChkT$) on the check window; monthly $\numICMonthlyDev$ / $\numICMonthlyChk$; quarterly $\numICQuarterlyDev$ / $\numICQuarterlyChk$. The monthly booster's first read on 2019--2022, taken before any cell of the portfolio grid existed, gave $\numICEsixBooster$ ($t=\numICEsixBoosterT$ on 47 months), with the ridge control at $\numICEsixRidge$; the one hold-out read, eleven months of 2023 under a rule frozen in advance, gave $\numICTwentyThree$ ($t=\numICTwentyThreeT$) with ridge at $\numICTwentyThreeRidge$. The sign of the signal therefore replicated twice outside the data on which the configuration was chosen, and the linear control replicated with it, so the replication is a statement about the characteristic set rather than about the booster. Three facts qualify it. The out-of-sample $R^2$ is within $\pm0.001$ of zero on 2009--2018 and 2019--2022 and $+0.012$ on 2023: the signal is essentially ordinal. Composites of the same characteristics with no fitted magnitudes (literature signs, textbook five, fitted signs) read IC $+0.020$, $+0.016$ and $+0.025$ over 2009--2022 against the booster's $+0.032$, with paired differences at $t\le1.4$: whether fitting adds anything cannot be told on this panel. And the same model class with per-refit hyperparameter selection on its validation slice reads $+0.014$ on development, no better than ridge ($\Delta\IC=+0.001$); the first study's ``no signal'' conclusion was largely a property of the selector. Figure~\ref{fig:ic_by_year} shows the yearly series: positive in nine of the ten development years (2013 is zero to three decimals) and higher on 2019--2023 on average, with 2023 ($\numICTwentyThree$) in the upper tail of the model's own range, just below 2021 ($\numICYearTwentyOne$). The rise is mostly composition: within the fixed cohort of firms present in 2009 the IC shows no detectable trend after 2014, and the 2019--2022 excess sits in post-2009 entrants (cohort $+0.023$, entrants $+0.070$), whose survivorship filtering differs.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{5pt}
+\caption{Rank IC of the fixed booster by window and horizon, with the linear control where it was run. $t=\overline{\IC}/s_{\IC}\sqrt n$ over the $n$ formation periods shown, treating periods as independent.}
+\label{tab:ic_windows}
+\input{tables/tab_ic_windows}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{fig_ic_by_year}
+\caption{Yearly mean of the monthly rank IC of the fixed booster used for the out-of-window and hold-out reads, 2009--2023, with the development, check and hold-out windows shaded and the mean of each window's yearly values drawn.}
+\label{fig:ic_by_year}
+\end{figure}
+
+\subsection{No construction turns it into the target Sharpe ratio}\label{sec:res_books}
+
+Table~\ref{tab:p12c_cells} lists the best development cells of the 55-cell grid at their declared costs, with their check-window values. The pre-declared selection, the weekly plus monthly blend on the 500 most liquid names at 2~bps, nets $\numSelDevNet$ on development ($\numSelDevAnn\pct$ per year, $\MaxDD$ $\numSelDevDD\pct$, gross $\numSelDevGross$) and $\numSelChkNet$ on the check window ($\numSelChkAnn\pct$, $\numSelChkDD\pct$, gross $\numSelChkGross$). The pass bar of 1.5 on both windows fails; no cell reaches 0.5 on both ($\numCellsHalfBoth$ of 55). Figure~\ref{fig:cost_frontier} places every cell by gross and net Sharpe ratio: the cloud sits below the 1.5 line on the gross axis in both windows, and the best development cell is not the best check-window cell (the cross-window rank correlation of the 55 cells is $\numXwinRhoNet$ for net and $\numXwinRhoGross$ for gross Sharpe ratios), which is what selection on a noisy but not empty ordering produces. Table~\ref{tab:precision} gives the uncertainty: with iid standard errors of $\numSelDevSE$ and $\numSelChkSE$ the target is $\numSelDevZ$ and $\numSelChkZ$ standard errors away; pooled over 2009--2022 the selected cell nets $\numPooledNet\pm\numPooledSE$ with upper 95\% limit $\numPooledUpper$, and none of the three net intervals excludes zero.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{Best development cells of the 55-cell grid at the declared cost of their universe (ALL 15, LIQ 5, TOP500 2 bps per side), development $\MaxDD\ge-25\%$. $\dagger$ marks the pre-declared selection. Last row: counts over all 55 cells.}
+\label{tab:p12c_cells}
+\fittab{tables/tab_p12c_cells}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_cost_frontier}
+\caption{Gross against net Sharpe ratio at the declared cost for the 55 cells, development (left) and check window (right); colour by universe, marker by aim family, the selected cell outlined; dashed lines at 1.5, dotted line net = gross.}
+\label{fig:cost_frontier}
+\end{figure}
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Precision of the selected cell's Sharpe ratios: iid standard error (eq.~\ref{eq:se}), 95\% interval, distance to the target 1.5 and to zero in standard errors; counts over the 55 cells of pooled upper limits reaching 1.0 and 1.5.}
+\label{tab:precision}
+\input{tables/tab_precision}
+\end{table}
+
+Two comparisons put the book numbers in scale. First, selection: the expected maximum of $N$ independent zero-mean null Sharpe ratios over a ten-year development window is $\numExpMaxTwoNineFour$ at $N=294$ (stored) and $\numExpMaxThreeFourNine$ at $N=349$ (simulated); the best development net Sharpe ratio on the rebuilt panels, $\numSelDevNet$ (0.83 on the superseded older build), is below it, so the net books alone cannot be told from selection noise. The gross books (selected $\numSelDevGross$, best $\numMaxGrossDev$) are above that bar, and the weekly IC's $t$ of $\numICWeeklyDevT$ is far above it: the distance between the information and the net book is partly transfer and partly cost. The bar is only indicative: the 55 cells are correlated, which lowers the expected maximum, and a no-information net Sharpe ratio has a negative mean, $-\mathrm{drag}/\sigma$. Second, that transfer: the annualised ICIR of the raw weekly prediction, $t\sqrt{52/n}$ from eq.~\eqref{eq:ic}, is $\numWeeklyRankICIRRefitDev$ on development and $\numWeeklyRankICIRRefitChk$ on the check window (on the earlier development-only panel the Spearman and Pearson ICIRs were $\numWeeklyRankICIR$ and $\numWeeklyPearsonICIR$), while the highest gross Sharpe ratio any of the 55 constructions realises is $\numMaxGrossDev$ and $\numMaxGrossChk$: a measured transfer coefficient of $\numTransferCoefRefitDev$ and $\numTransferCoefRefitChk$ for the best cell of each window. Both ratios compare the same window, universe (ALL) and horizon (weekly), but they are upper estimates, because the numerator is itself a maximum over 55 cells, and the check-window ratio is imprecise (with 201 weeks the gross Sharpe ratio alone has a standard error of $\numSelChkSE$, about $\pm\numTransferCoefChkSE$ on the ratio); the book is volatility-scaled and neutralised over the tradable set while the ICIR scores every predicted name, so the ratio is an ex-post analogue of a transfer coefficient rather than the ex-ante quantity. The rank ICIR is not a bound in the other direction either, since volatility scaling and neutralisation can realise more than a proportional book, but it is the right order of magnitude. Gross rises with trading and net falls with it: the full-trading books ($\theta=1$) have the highest gross Sharpe ratios (up to $\numMaxGrossDev$) at one to two turns a week, so they are net-positive at 1--2 bps, near zero or negative at 5 bps and deeply negative at 15 bps; the slow ALL books ($\theta=0.05$) keep roughly half to two thirds of the development gross and about all of the check-window gross at under a tenth of the turnover, while the slow TOP500 books lose most of it (Table~\ref{tab:p12c_cells}, Figure~\ref{fig:cost_frontier}).
+
+
+\paragraph{Crisis years in the check window.}
+The check window contains the March 2020 crash and the 2022 bear market, so a reader may ask whether its weaker book numbers describe a crisis rather than ordinary conditions. Table~\ref{tab:crisis} splits the window by calendar year for three series whose yearly values are stored (the weekly grid books are stored only as window summaries): the monthly rank IC, the monthly decile book of Section~\ref{sec:power} (ALL, 15 bps), and a full-breadth rank-weighted book made dollar-, beta- and SIC-division-neutral and held in three overlapping monthly cohorts (ALL, 15 bps). In 2020 the yearly IC is $\numICYearTwenty$, close to the development mean of $\numICDevYearMean$; with twelve monthly values its standard error is $\numICTwentySE$, so the year neither confirms nor excludes a failure. Within the year the crash months are negative (February $\numICFebTwenty$, the $\numICFebTwentyRank$th lowest of the 168 months 2009--2022, and March $\numICMarTwenty$) and April recovers ($\numICAprTwenty$); the decile book lost $\numDecileFebTwenty\pct$ and $\numDecileMarTwenty\pct$ in those two months, gained $\numDecileAprTwenty\pct$ in April and closed the year at $\numDecileYearTwenty\pct$. The weakest check year for the IC is 2022 ($\numICYearTwentyTwo$); dropping 2020 moves the check-window mean of yearly ICs from $\numICChkYearMean$ to $\numICChkYearMeanExTwenty$. The decile book returned $\numDecileYearTwentyTwo\pct$ in 2022, against $\numDecileChkYearMean\pct$ on average over the four check years and $\numDecileDevYearMean\pct$ over the ten development years; its worst year is $\numDecileWorstYear$ ($\numDecileWorstYearNet\pct$), inside the development window, where the pre-declared rules already count it. The neutral book shows the opposite pattern, $\numNeutralYearTwenty\pct$ in 2020, its worst year of 2009--2022, and $\numNeutralYearTwentyTwo\pct$ in 2022, so the size and sign of a crisis-year loss depend on the construction. For the information and for the decile book's return the check window was the better window, but not for its risk: the decile book's annual volatility rises from $\numDecileVolDev\pct$ to $\numDecileVolChk\pct$. The weekly grid books cannot be split by year; their summaries show a higher-volatility window rather than a lower-return one. For the selected cell the gross return is $\numSelDevGrossAnn\pct$ per year on development and $\numSelChkGrossAnn\pct$ on the check window while annual volatility rises from $\numSelDevVol\pct$ to $\numSelChkVol\pct$; across the 55 cells the check-to-development volatility ratio is $\numVolRatioMin$--$\numVolRatioMax$ (median $\numVolRatioMedian$), gross return is higher on the check window in $\numCellsHigherChkGrossAnn$ cells, and $\numCellsDeeperChkDD$ cells have a deeper check-window drawdown at the declared cost despite the shorter window. This is consistent with a crisis effect on the weekly Sharpe ratios but does not establish one. Two cautions apply. Removing a year after reading it is a selection on the outcome, so the figures without 2020 are a post-hoc diagnostic and the pass rule is unchanged. And a predictor meant to run only in ordinary conditions needs an ex-ante definition of ordinary (a volatility or drawdown trigger fixed before the read); such a cell would be a new pre-declared trial, and none was declared.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{5pt}
+\caption{The check window by calendar year (post-hoc split): yearly mean of the monthly rank IC of the fixed booster, and calendar-year net return of the monthly decile long--short book (ALL, 15 bps) and of a neutral rank-weighted book held in three-month cohorts.}
+\label{tab:crisis}
+\input{tables/tab_crisis}
+\end{table}
+
+\subsection{What a net Sharpe ratio of 1.5 would take}\label{sec:res_takes}
+
+Equation~\eqref{eq:ladder} reproduces the stored cost ladder of all 55 cells to within 0.02, so its inversion, eq.~\eqref{eq:ic_mult}, is exact arithmetic on the stored summaries. Table~\ref{tab:what_it_takes} gives the result. No cell's gross Sharpe ratio reaches 1.5 on either window (maximum $\numMaxGrossDev$ on development, $\numMaxGrossChk$ on the check window), so no cost level, including zero, closes the gap in any cell; the cost that would do so is negative for every cell and window. The information multiple is $\numKappaSelDev$ on development and $\numKappaSelChk$ on the check window for the selected cell, and $\numKappaLeastBoth$ for the least demanding cell on both windows. The shortfall is information, not cost: to first order the least demanding cell would need about two and a half times its information coefficient to reach net 1.5 at its declared cost. This is a floor, not a recipe: between the two windows the same cell's weekly IC doubled ($\numICWeeklyDev$ to $\numICWeeklyChk$) while its gross Sharpe ratio stayed at $\numLeastBothDevGross$ and $\numLeastBothChkGross$. The selected cell's break-even cost on development is $\numBreakevenSelDev$ bps per side; at its declared 2 bps the cost drag consumes about four tenths of the gross.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{Cost-ladder inversion (eq.~\ref{eq:ic_mult}) for the selected cell and the least demanding cells: annual volatility, turns per year, declared and break-even cost, the gross Sharpe ratio needed for net 1.5 at the declared cost and the information multiple $\kappa$.}
+\label{tab:what_it_takes}
+\fittab{tables/tab_what_it_takes}
+\end{table}
+
+\subsection{Graph networks trained end to end add no information}\label{sec:res_graphs}
+
+Table~\ref{tab:p13_ic} gives the seed-mean rank IC of each graph cell by horizon and window and Table~\ref{tab:p13_books} the selected book of each prediction set under the identical grid and rules. The no-graph baseline C0 nets $\numPthirteenCzeroDevNet$ on development and $\numPthirteenCzeroChkNet$ on the check window; the three economic-graph network C1 nets $\numPthirteenConeDevNet$ / $\numPthirteenConeChkNet$, the four-graph network C2 $\numPthirteenCtwoDevNet$ / $\numPthirteenCtwoChkNet$ and the attention network C3 $\numPthirteenCthreeDevNet$ / $\numPthirteenCthreeChkNet$; the booster reference on the same grid is $\numSelDevNet$ / $\numSelChkNet$. On the development window every graph cell's book is at or below the baseline (on the check window C3 is slightly above it, $\numPthirteenCthreeChkNet$ against $\numPthirteenCzeroChkNet$, inside one standard error of $\numSelChkSE$), and all are far from 1.5. The paired comparison (Table~\ref{tab:p13_dic}, Figure~\ref{fig:p13_dic}) is the primary evidence: on development the demeaned $\Delta\IC$ of C1 against C0 is small and of mixed sign across horizons, and C2 and C3 are slightly negative on the weekly horizon; the largest $|t|$ against C0 on development is $\numPthirteenMaxAbsDicT$, below the pre-declared pass threshold of 2, and the only comparison anywhere with $t\ge2$ (C1 against the aggregate-feature control on the weekly horizon; the only other $|t|\ge2$ is negative, C1 against C0 on the quarterly check window, raw basis) is not a pass condition and does not repeat on the check window. The rewired null C4, where it ran, has the highest monthly development IC of any graph cell and quarterly and check-window ICs inside the range of the real-graph cells, which is what one expects if the message passing fits degree and industry composition rather than specific pairings; the paired comparison against C4 was not completed. None of the four label-shift diagnostics meets the persistence rule, but at these ICs the diagnostic has little power (the real development ICs have $t\le1.7$, and on the quarterly horizon the shifted-label models read higher ICs than the real ones, failing the rule on $t$ alone); it neither attributes nor clears a signal that is not there. The weekly C4 and C5 predictions, the C4 and C5 books, every paired $\Delta\IC$ against C4 and all of C5's paired $\Delta\IC$, and the weekly label-shift runs were not completed before the programme was paused, and the formal selection script was not executed (Section~\ref{sec:limits}). Since a pass requires, on every horizon its aim uses, a development $\Delta\IC$ against C0 with $t\ge2$, and no horizon of C1--C3 has one, the missing comparisons against C4 cannot make C1--C3 pass. The eligible temporal cell C5 has neither a book nor a paired $\Delta\IC$ yet; its monthly and quarterly ICs are at the baseline's level, so a pass is unlikely but not excluded by the completed work. For the completed cells the stop rule's negative form applies: graph models trained end to end add a $\Delta\IC$ indistinguishable from zero over the same features without a graph, and the gap to the target remains the information gap of Section~\ref{sec:res_takes}.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Graph programme: seed-mean rank IC by cell and horizon, development $(t)$ / check $(t)$; naive per-formation $t$. ``pending'' marks cells not run before the pause.}
+\label{tab:p13_ic}
+\input{tables/tab_p13_ic}
+\end{table}
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Graph programme: the selected book of each prediction set under the 55-cell grid and rules of Section~\ref{sec:books}; net Sharpe ratio (annualised return, $\MaxDD$), gross Sharpe ratio, standard errors (iid / 13-week block bootstrap). Eligible cells are those the rule may select.}
+\label{tab:p13_books}
+\fittab{tables/tab_p13_books}
+\end{table}
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{Paired $\Delta\IC$ of each graph cell against the controls (C0 no-graph; C0g aggregate features), by horizon and window, demeaned and raw bases, month-level $t$ in parentheses; $*$ marks development demeaned $|t|\ge2$.}
+\label{tab:p13_dic}
+\fittab{tables/tab_p13_dic}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.64\textwidth]{fig_p13_dic}
+\caption{Development paired $\Delta\IC$ (demeaned basis) of the graph cells against the no-graph baseline C0 by horizon, with $\pm1.96$ standard errors recovered from the $t$-statistic (approximate: $t$ is stored to one decimal); hollow markers are the check window.}
+\label{fig:p13_dic}
+\end{figure}
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Label-shift diagnostic (seed 0): IC of the model trained on labels shifted back one year against the real model; the declared persistence rule (shifted development IC $>0$, $t\ge2$, at least half the real IC) is not met in any case.}
+\label{tab:label_shift}
+\fittab{tables/tab_label_shift}
+\end{table}

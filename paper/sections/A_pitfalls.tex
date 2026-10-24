@@ -1,0 +1,14 @@
+\section{Pitfalls that changed numbers}\label{app:pitfalls}
+
+Each item altered a reported statistic before it was found; the fix is part of the protocol above.
+\begin{enumerate}
+\item \textbf{Constant booster and ties.} The pairwise objective's hessians are tiny, so a \texttt{min\_child\_weight} of 500 copied from the squared-error grid forbade every split and returned a constant; a stable sort then ranked the constant alphabetically and produced an IC of $\pm0.02$, larger than the grid margins. Fix: \texttt{min\_child\_weight} 1, an assertion of non-degenerate predictions after every fit, tie-safe average-rank IC, seeded decile tie-breaks.
+\item \textbf{Validation-IC noise.} With a 12-month slice the validation IC has standard error 0.024, above the winning grid margins (0.000--0.005); early stopping halted boosters at a median of about five trees. Fix: fixed rounds, no per-refit selection.
+\item \textbf{Rank target not market-neutral.} It carries $(\beta_i-\bar\beta)\,\mathrm{mkt}_t$ (correlation 0.75 with Mkt-RF), so a validation year in a falling market selects a low-beta book. Fix: report ex-ante beta per year and the beta-hedged book; eq.~\eqref{eq:neutral}.
+\item \textbf{Cost-confounded permutation null.} Random decile books turn over 1.6 times more, so ``beats the shuffle'' on net Sharpe ratio measured lower turnover (net $p=0.002$, gross $p=0.42$). Fix: evaluate the permutation null on the gross statistic.
+\item \textbf{Survivorship-loaded features.} The models load on short-term reversal and idiosyncratic volatility on a survivor-only panel. Fix: ablation diagnostic without them; a delisting-inclusive panel remains the open requirement.
+\item \textbf{Price levels wrong by future splits.} See Section~\ref{sec:limits}. Fix: a variant without the \$5 filter and the five price-level characteristics.
+\item \textbf{Forward-looking event flags.} Two earnings-calendar flags used later 8-K filings. Fix: event features built only from a clean point-in-time event mask.
+\item \textbf{Cache key and annualisation.} A prediction cache keyed without the split returned another split's predictions; annualising weekly series with $\sqrt{12}$ mis-ranked cells inside a deflated Sharpe ratio. Fix: split and horizon in the key; per-horizon periods per year (50.4 / 12 / 4; books use 52 and the selection script rescales by $\sqrt{50.4/52}$).
+\item \textbf{Validation-selected ``no signal''.} The first study's conclusion that six model classes found no signal (rank IC at most $+0.017$) held only for validation-selected and early-stopped models; the selector, not the model, was the binding failure.
+\end{enumerate}

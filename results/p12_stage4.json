@@ -1,0 +1,217 @@
+{
+ "design": "P12 Stage 4 \u2014 pre-declared selection over the recorded cells (no new return read): highest development net Sharpe\nsubject to MaxDD <= 25 %, with the check-window read of the selected cell (and of all cells, as recorded in the JSONs);\ncells without a check window (weekly stages 3, 3b) listed separately; exact expected maxima of N zero-Sharpe trials over\n10 years by Monte Carlo (red-team finding 9); weekly Pearson / rank benchmarks copied from p12_stage3.json. Writes p12_stage4.json.",
+ "n_cells_with_check": 234,
+ "n_weekly_cells": 60,
+ "n_total": 294,
+ "selection_top8": [
+  {
+   "signal": "S2 sic4_minus_a0.5",
+   "book": "vs_k1_LIQ5",
+   "dev_net_sharpe": 0.3900222298337338,
+   "dev_net_ann": 0.020990193203575484,
+   "dev_gross_sharpe": 0.5830781652910565,
+   "dev_maxdd": -0.09989695182978364,
+   "dev_net_sharpe_ci95": [
+    -0.17305700346987646,
+    0.9342152969434632
+   ],
+   "chk_net_sharpe": 0.023934410656989664,
+   "chk_net_ann": 0.002064616486721179,
+   "chk_gross_sharpe": 0.16442633187633227,
+   "chk_maxdd": -0.15391227282085962
+  },
+  {
+   "signal": "S2 sic4_minus_a0.25",
+   "book": "vs_k1_LIQ5",
+   "dev_net_sharpe": 0.35804091671266003,
+   "dev_net_ann": 0.02139388037545491,
+   "dev_gross_sharpe": 0.5282510377039847,
+   "dev_maxdd": -0.11613299592181237,
+   "dev_net_sharpe_ci95": [
+    -0.21246988808576647,
+    0.9065510474083088
+   ],
+   "chk_net_sharpe": 0.027089099115634733,
+   "chk_net_ann": 0.002555542319364803,
+   "chk_gross_sharpe": 0.15367744222558646,
+   "chk_maxdd": -0.17209603036528964
+  },
+  {
+   "signal": "S2 sic4_minus_a0.5",
+   "book": "vsn4_k1_LIQ5",
+   "dev_net_sharpe": 0.3578543341923354,
+   "dev_net_ann": 0.01020074574538466,
+   "dev_gross_sharpe": 0.7581019179845143,
+   "dev_maxdd": -0.09187102622942112,
+   "dev_net_sharpe_ci95": [
+    -0.30265699549555375,
+    1.0531741073687906
+   ],
+   "chk_net_sharpe": 0.0006832920415079485,
+   "chk_net_ann": 4.268150255299849e-05,
+   "chk_gross_sharpe": 0.2110869803532393,
+   "chk_maxdd": -0.14220092975342546
+  },
+  {
+   "signal": "S2 bea1_plus_a0.5",
+   "book": "vsn4_k1_LIQ5",
+   "dev_net_sharpe": 0.3479391454212203,
+   "dev_net_ann": 0.009858267317228702,
+   "dev_gross_sharpe": 0.7497481363953558,
+   "dev_maxdd": -0.08480420526707932,
+   "dev_net_sharpe_ci95": [
+    -0.31465783562631894,
+    1.0465818942109002
+   ],
+   "chk_net_sharpe": 0.02127260306978418,
+   "chk_net_ann": 0.0013390201847599294,
+   "chk_gross_sharpe": 0.22905574658749137,
+   "chk_maxdd": -0.14560520485400819
+  },
+  {
+   "signal": "S2 bea1_plus_a0.25",
+   "book": "vsn4_k1_LIQ5",
+   "dev_net_sharpe": 0.3353820449603123,
+   "dev_net_ann": 0.009570498008527531,
+   "dev_gross_sharpe": 0.7345637517866082,
+   "dev_maxdd": -0.08692282016168074,
+   "dev_net_sharpe_ci95": [
+    -0.3273362931708364,
+    1.0374595402035507
+   ],
+   "chk_net_sharpe": 0.038785764686871296,
+   "chk_net_ann": 0.002392654897941597,
+   "chk_gross_sharpe": 0.25126773875985225,
+   "chk_maxdd": -0.1401459841609558
+  },
+  {
+   "signal": "S2 bea1_plus_a0.5",
+   "book": "vs_k1_LIQ5",
+   "dev_net_sharpe": 0.3332592779309939,
+   "dev_net_ann": 0.022152949028447205,
+   "dev_gross_sharpe": 0.4819748709916851,
+   "dev_maxdd": -0.1435799851930114,
+   "dev_net_sharpe_ci95": [
+    -0.23660400308527704,
+    0.8944212350364248
+   ],
+   "chk_net_sharpe": 0.030555281043169718,
+   "chk_net_ann": 0.002973725270566722,
+   "chk_gross_sharpe": 0.14909090992383672,
+   "chk_maxdd": -0.19833783188772725
+  },
+  {
+   "signal": "S2 sic4_minus_a0.25",
+   "book": "vsn4_k1_LIQ5",
+   "dev_net_sharpe": 0.3332353440825467,
+   "dev_net_ann": 0.009558131204264254,
+   "dev_gross_sharpe": 0.7311027931626226,
+   "dev_maxdd": -0.09195199330216008,
+   "dev_net_sharpe_ci95": [
+    -0.3330670499775492,
+    1.0371229586186361
+   ],
+   "chk_net_sharpe": 0.021753018519479368,
+   "chk_net_ann": 0.0013482527735343627,
+   "chk_gross_sharpe": 0.233811296187573,
+   "chk_maxdd": -0.14063928634888923
+  },
+  {
+   "signal": "S2 bea1_plus_a0.25",
+   "book": "vs_k1_LIQ5",
+   "dev_net_sharpe": 0.3310539265930682,
+   "dev_net_ann": 0.021627924476156857,
+   "dev_gross_sharpe": 0.4831877811539813,
+   "dev_maxdd": -0.13757584785227506,
+   "dev_net_sharpe_ci95": [
+    -0.23928011665870866,
+    0.885948311742379
+   ],
+   "chk_net_sharpe": 0.028849558714031658,
+   "chk_net_ann": 0.00287227159599851,
+   "chk_gross_sharpe": 0.14637950754913412,
+   "chk_maxdd": -0.19007692293962675
+  }
+ ],
+ "cells_with_net_ge_0_5_on_both_windows": [],
+ "expected_max_of_N_noise_sharpes_10y_exact_mc": {
+  "30": 0.6452704437247804,
+  "100": 0.7929320113594205,
+  "234": 0.8847104373975774,
+  "294": 0.907406295139523
+ },
+ "asymptotic_sqrt2lnN_over_sqrt10": {
+  "30": 0.8247663161965523,
+  "100": 0.9597051824376164,
+  "234": 1.044540196963018,
+  "294": 1.0661688203411954
+ },
+ "weekly_benchmarks": {
+  "ALL": {
+   "spearman": {
+    "mean": 0.025612499330842673,
+    "sd": 0.10192406617258007,
+    "icir_ann": 1.8120780125427118,
+    "n_weeks": 502
+   },
+   "pearson": {
+    "mean": 0.018432493401652303,
+    "sd": 0.10424655447802657,
+    "icir_ann": 1.2750407037830211,
+    "n_weeks": 502
+   },
+   "pearson_volscaled": {
+    "mean": 0.020542659723783857,
+    "sd": 0.09543382338622304,
+    "icir_ann": 1.552229814135354,
+    "n_weeks": 502
+   }
+  },
+  "LIQ": {
+   "spearman": {
+    "mean": 0.01929882247483717,
+    "sd": 0.11652911057654683,
+    "icir_ann": 1.1942577034155588,
+    "n_weeks": 502
+   },
+   "pearson": {
+    "mean": 0.011923636950350133,
+    "sd": 0.12060618299471064,
+    "icir_ann": 0.7129200733662207,
+    "n_weeks": 502
+   },
+   "pearson_volscaled": {
+    "mean": 0.013997021352387297,
+    "sd": 0.10497761148525744,
+    "icir_ann": 0.9614807857746707,
+    "n_weeks": 502
+   }
+  }
+ },
+ "monthly_benchmarks": {
+  "dev": {
+   "rank_ic_mean": 0.023768562378369492,
+   "rank_ic_sd": 0.08645581219649032,
+   "icir_ann_bound": 0.9523560444644655,
+   "pearson_ic_mean": 0.013063570217043938,
+   "pearson_icir_ann": 0.5049564987620976,
+   "n_months": 120
+  },
+  "chk": {
+   "rank_ic_mean": 0.0534445714396273,
+   "rank_ic_sd": 0.112903890321287,
+   "icir_ann_bound": 1.639778981198242,
+   "pearson_ic_mean": 0.039733159715572224,
+   "pearson_icir_ann": 1.1733922219778126,
+   "n_months": 48
+  },
+  "full": {
+   "rank_ic_mean": 0.03224742211015744,
+   "rank_ic_sd": 0.0953655146550824,
+   "icir_ann_bound": 1.1713704625812758,
+   "pearson_ic_mean": 0.020683452930909167,
+   "pearson_icir_ann": 0.7259401865927204,
+   "n_months": 168
+  }
+ }
+}

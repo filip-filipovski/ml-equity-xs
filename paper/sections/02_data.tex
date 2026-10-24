@@ -1,0 +1,62 @@
+\section{Data and the point-in-time panel}\label{sec:data}
+
+\paragraph{Universe and formation grid.}
+Formation dates $t$ form one grid per horizon $h$: weekly (W) every fifth trading session from 2004-01-02, monthly (M) the last session of each month, quarterly (Q) the last session of March, June, September and December. The firm set $\mathcal U_t$ (``ALL'') contains every US common stock with a bar on $t$, a raw close of at least \$5 and a 63-session median dollar volume of at least \$1M; ``LIQ'' is the half of ALL whose median-dollar-volume percentile within the date exceeds 0.5; ``TOP500'' is the 500 largest by that volume. Prices are survivor-only: the feed lists firms as of October 2026, so delisted firms are absent (Section~\ref{sec:limits}). Let $r_{i,s}$ be the daily adjusted-close return (set missing if above $3$ or below $-0.95$) and $M_s$ the equal-weight mean return of the ALL universe fixed at the latest month-end strictly before $s$. The panels used by the main experiments run to 2022-12 and contain 1{,}664{,}463 weekly, 397{,}417 monthly and 132{,}961 quarterly firm-dates, of which 1{,}347{,}743 / 318{,}475 / 103{,}945 receive out-of-sample predictions.
+
+\paragraph{Characteristics.}
+Table~\ref{tab:features} lists the 28 characteristics as computed at formation row $t$. Fundamentals use SEC facts with acceptance time at or before the close of $t$ and go stale after 18 months; trailing twelve months (TTM) is the sum of four quarterly values or the latest annual. All eleven fundamental characteristics are set missing before 2009-01-01 and on rows whose implied daily turnover exceeds 10\%, so 2004--2008 rows carry only their missing-value flags. Earnings-event quantities use 8-K item 2.02 filings with a 16:00~ET session rule for day~0.
+
+\begin{table}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{The 28 characteristics at formation row $t$. Lookbacks are trading sessions; ``min $k$'' is the minimum number of non-missing observations. $DV$ = close $\times$ volume.}
+\label{tab:features}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Name & Definition \\
+\midrule
+\texttt{mom\_12\_1}, \texttt{mom\_6\_1} & compounded return close$(t{-}252)\to$close$(t{-}21)$; close$(t{-}126)\to$close$(t{-}21)$ \\
+\texttt{rev\_1m}, \texttt{rev\_1w} & close$(t{-}21)\to$close$(t)$; close$(t{-}5)\to$close$(t)$ \\
+\texttt{vol\_63} & sample s.d.\ of $r$ over 63 sessions (min 50) \\
+\texttt{ivol\_63} & $\sqrt{\max(0,\mathrm{Var}(r)-\mathrm{Cov}(r,M)^2/\mathrm{Var}(M))}$, 63 sessions (min 50 pairs) \\
+\texttt{maxret\_21} & $\max r$ over 21 sessions (min 15) \\
+\texttt{amihud\_63} & mean of $|r_s|/(DV_s/10^6)$ over 63 sessions (min 50) \\
+\texttt{log\_dv\_63} & $\log$ of the 63-session median $DV$ (min 50) \\
+\texttt{beta\_252} & $\mathrm{Cov}(r,M)/\mathrm{Var}(M)$ over 252 sessions (min 200 pairs) \\
+\texttt{skew\_63} & $m_3/m_2^{3/2}$ over 63 sessions (min 50) \\
+\texttt{hi\_252} & adjusted close$_t$ / 252-session maximum (min 200) \\
+\texttt{log\_price} & $\log$ of the raw traded close \\
+\texttt{days\_since\_ea} & calendar days since the latest 8-K item 2.02 day~0 $\le t$ (missing if $>400$) \\
+\texttt{days\_to\_exp\_ea} & days until (day~0 of the first event within the last 364 days) $+364$ \\
+\texttt{ann\_ret\_last} & $\sum_{k=-1}^{1}(r_{d+k}-m_{d+k})$ around the latest clean event day $d$, $m$ = total market return \\
+\texttt{ea\_timing} & $+1$ / $0$ / $-1$: latest expected announcement late / on time / early (5-session tolerance) \\
+\texttt{log\_mcap} & $\log(P^{raw}_t S_t)$, $S_t$ = cover-page share count on $t$'s split basis \\
+\texttt{bm}, \texttt{ep}, \texttt{sp} & book equity, TTM net income, TTM revenue, each over market capitalisation \\
+\texttt{asset\_growth} & assets / assets twelve months earlier $-1$ \\
+\texttt{accruals} & (TTM net income $-$ TTM operating cash flow) / assets \\
+\texttt{nsi} & $\log(S_t/S_{old})$, $S_{old}$ = share count known twelve months earlier \\
+\texttt{leverage}, \texttt{cash\_assets} & liabilities / assets; cash / assets \\
+\texttt{roe} & TTM net income / book equity \\
+\texttt{sue} & $(\mathrm{EPS}_q-\mathrm{EPS}_{q-4})/\mathrm{s.d.}$ of the eight previous seasonal differences (need $\ge6$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Rank transform.}
+For each date and characteristic, finite values are winsorised at the 1st and 99th percentiles of that date, ranked with ties averaged ($R_i\in\{1,\dots,n\}$) and mapped to
+\begin{equation}\label{eq:rank}
+\tilde x_{i,f,t}=\frac{R_i-1}{n-1}-\frac12\in[-\tfrac12,\tfrac12],\qquad m_{i,f,t}=0;\qquad\text{missing: }\tilde x=0,\ m=1 .
+\end{equation}
+The model input is $x_{i,t}=(\tilde x_{i,1..28},\ \text{11 SIC one-hots},\ m_{i,1..28})\in\R^{67}$. The one-hots are the ten SIC divisions plus ``unknown'' from the firm's current filer profile and are static in time; a 29th candidate (gross profitability) was dropped by a 30\% coverage rule fixed before any result was read.
+
+\paragraph{Target.}
+With $u$ the next formation row, entry is the close of row $t{+}1$ and exit the close of row $u{+}1$:
+\begin{equation}\label{eq:yraw}
+y^{raw}_{i,t}=\prod_{s=t+2}^{u+1}(1+r_{i,s})-1,\qquad
+y^{rank}_{i,t}=\frac{R(y^{raw}_{i,t})-1}{n_t-1}-\frac12,\qquad
+y^{ex}_{i,t}=y^{raw}_{i,t}-\overline{y^{raw}_{t}},
+\end{equation}
+ranks over ALL with ties averaged. Models are trained on $y^{rank}$, information coefficients are scored against $y^{ex}$, and books are paid in $y^{raw}$. A within-date rank is not market-neutral: writing $r_{i,t}=a_t+(\beta_i-\bar\beta)\,\mathrm{mkt}_t+\varepsilon_{i,t}$, the rank keeps the term $(\beta_i-\bar\beta)\,\mathrm{mkt}_t$; measured, the monthly rank target has correlation 0.75 with the market excess return. Section~\ref{sec:books} removes this exposure at the portfolio stage.
+
+\paragraph{Zones.}
+The data are partitioned once and for all into a training zone (2004-01 to 2023-01), a walk-forward zone (2023-01 to 2024-07) and a sealed zone from 2024-07-01 from which no price or return has been read. Inside the training zone, 2009--2018 is the development window on which every selection was made (some later design choices were proposed after earlier check-window results had been reported, which Section~\ref{sec:valid} counts as reuse) and 2019--2022 the check window, which this programme had read three times before the graph experiments (disclosed and counted in Section~\ref{sec:valid}). The walk-forward zone was read once, for 2023, under a rule frozen in advance.

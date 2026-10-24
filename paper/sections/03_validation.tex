@@ -1,0 +1,22 @@
+\section{Validation geometry}\label{sec:valid}
+
+\paragraph{Expanding refits with an embargo.}
+Let $\mathit{mi}=12\cdot\mathrm{year}+\mathrm{month}-1$ index the \emph{entry} month of a label. For each out-of-sample year $Y\in\{2009,\dots,2022\}$ a new model is fitted on data strictly before the test year, with an embargo $e=1$ month and a 12-month validation slice:
+\begin{equation}\label{eq:split}
+\text{test}=[12Y,\,12Y{+}11],\qquad \omega=12Y-1-e,\qquad \text{val}=[\omega-11,\,\omega],\qquad \text{fit}=[m_0,\ \omega-13],
+\end{equation}
+with $m_0$ = February 2004 and a one-month gap between the fit and validation slices. The constraint that matters is on daily returns, not on month labels: a training label whose holding window ends after the first test entry would share a daily return with a test label. Writing $\mathrm{exit}(\cdot)$ for the close at which a label's holding window ends (row $u{+}1$) and $\mathrm{entry}(\cdot)$ for the close at which it starts (row $t{+}1$), so that a label's daily returns are those strictly after its entry close up to and including its exit close, the geometry requires
+\begin{equation}\label{eq:embargo}
+\max_{l\in\text{fit}\cup\text{val}}\mathrm{exit}(l)\ \le\ \min_{l\in\text{test}}\mathrm{entry}(l),\qquad
+\max_{l\in\text{fit}}\mathrm{exit}(l)\ \le\ \min_{l\in\text{val}}\mathrm{entry}(l),
+\end{equation}
+so that no two labels on opposite sides of a boundary share a daily return. The same $e=1$ and 12-month validation slice are used at every horizon; with them eq.~\eqref{eq:embargo} holds by arithmetic on the entry and exit rows (strictly at the weekly and monthly horizons, with equality of exit and entry closes at the quarterly one). It is a property of the construction: only the earlier window-grid study's splitter asserts it in code. Refits retrain from scratch; the random seed is the base seed plus the first test month index.
+
+\paragraph{Graph-network masks.}
+The graph experiments (Section~\ref{sec:graphs}) use no validation slice. Test rows are those with $12Y\le\mathit{mi}\le12Y{+}11$; training rows satisfy $\mathit{mi}\le12Y-2$ \emph{and} $\mathrm{exit\_date}\le$ the earliest formation date of the test rows. The graph models therefore train through November of $Y{-}1$, while the booster's fit slice ends in October of $Y{-}2$; both respect eq.~\eqref{eq:embargo}.
+
+\paragraph{What ``no selection'' means.}
+The headline booster has no per-refit hyperparameter selection: depth, learning rate, number of rounds and subsampling are constants fixed before the out-of-window reads. It does not mean the configuration was never chosen. It was the best of three model classes on the development window, and its development IC of $+0.031$ on the original panel is the best of five seeds ($+0.029$ averaged); on the corrected panel used in Table~\ref{tab:ic_windows} the same design reads $+0.023$, a gap whose cause is not isolated. Section~\ref{sec:results} shows why fixing matters: the same model class with per-refit selection over a 144-cell grid on the 12-month validation IC reads $+0.014$, about the ridge control's $+0.013$, so its advantage over ridge falls from $+0.018$ to $+0.001$, because the validation IC has a standard error of about 0.024 while the margins between grid points are 0.000--0.005. For the graph networks one hyperparameter set was fixed, hashed and registered before any graph result was read; the training and evaluation code refuse unregistered hashes.
+
+\paragraph{Trial counting.}
+Multiple testing is counted explicitly. The portfolio programme has $N=349$ pre-declared cells (294 in a first programme, 234 of them monthly cells with a 2019--2022 check window and 60 weekly cells on panels ending 2018; then a 55-cell grid on panels rebuilt through 2022, first run on development only on the older panels and counted once); each graph-network prediction set evaluated adds another 55, so the graph programme counts $N=349+55k$. Section~\ref{sec:infer} converts $N$ into an expected maximum of null Sharpe ratios and into a deflated Sharpe ratio \citep{baileylopez2014}. The check window 2019--2022 had been read three times before the graph experiments (once by the out-of-window replication, once by an earlier graph-feature and construction study, and once by the 349-cell programme); a pass on it is therefore a pass on a reused window, which we state wherever it is used.
