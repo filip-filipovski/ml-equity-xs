@@ -6,7 +6,7 @@
 - refits trained (trainer log lines `MODEL .. trained`): 808
 - GOAL: NOT MET
 
-Goal (owner): net Sharpe > 1.5 and MaxDD < 25 % using graph methods. Every Sharpe below is followed by (annualised return, MaxDD).
+Goal: net Sharpe > 1.5 and MaxDD < 25 % using graph methods. Every Sharpe below is followed by (annualised return, MaxDD).
 
 ## 1. Rank IC (seed mean; development 2009-2018 / check 2019-2022)
 

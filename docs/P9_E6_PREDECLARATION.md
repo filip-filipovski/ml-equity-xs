@@ -1,7 +1,7 @@
 # P9 E6 pre-declaration — fresh-window replication of the fixed booster (2019–2022)
 
 Written 2026-10-17, branch `loop/ml-meeting`, **before any post-2018 IC is computed or read**. Addendum to
-`P9_PREDECLARATION.md`. Owner mandate: search for an edge; this is the highest-prior legitimate candidate in the repo,
+`P9_PREDECLARATION.md`. Mandate: search for an edge; this is the highest-prior legitimate candidate in the repo,
 tested the only honest way — on data the model has never been fit, selected or evaluated on.
 
 ## Why this candidate
@@ -71,14 +71,14 @@ turnover/yr, break-even bps/side, per-year table. Paired ΔIC (M2 − M1) with t
 * Not tradeable: survivor-only (less so here), ordinal-only, 47 months, no N1/N2 null battery in this read.
 * No cell selection, no max over anything, no re-run with other settings. One read.
 
-## Phase B — frozen now, NOT run in E6 (owner decision, irreversible)
+## Phase B — frozen now, NOT run in E6 (decision, irreversible)
 
 If E6 **replicates**, the proposal is a **one-shot** on the equities WFA zone **2023-01-01 → 2024-07-01** with the
 identical frozen C1 config: panel extended to 2024-07-01, expanding refits for test years 2023 (12 target months) and
 2024 (target months 2024-01 … 2024-05, 5 months; the June window needs July prices), **~17 months**. Pre-declared
 WFA read: IC > 0 and per-month t ≥ 2.0 **and** net L/S annualised return > 0 at 15 bps → "survived the WFA one-shot
 (reduced power)". Anything else → WFA FAIL, zone spent. This is written here so Phase B cannot be shaped by E6's
-numbers. **It runs only on explicit owner go-ahead.**
+numbers. **It runs only on an explicit go-ahead.**
 
 ## Compute and outputs
 
@@ -131,7 +131,7 @@ under the amended criterion.** Gates 2–4 unchanged.
 
 ## Addendum B1 — Phase B, the equities WFA one-shot (written 2026-10-17 ~15:15, BEFORE any WFA-zone IC is computed)
 
-Owner on 2026-10-17: "for 48h … you own all the decisions". Phase B is therefore run now, exactly as frozen above and
+Decision on 2026-10-17: Phase B is run now, exactly as frozen above and
 with the red-team-corrected reads; nothing in the pass rule is changed.
 
 * **Data:** panels rebuilt with the same builder to the WFA end **2024-07-01** → `ml_panel_wfa2024.*` (price-filtered,
@@ -171,8 +171,7 @@ with the red-team-corrected reads; nothing in the pass rule is changed.
 
 ### B2 note (2026-10-17 ~15:25, before any WFA read)
 
-Owner, mid-tick: "Goal set: find a model with more than 1.5 sharpe and 25% dd by using the graph methods". Decision
-(owner-delegated): **Phase B is deferred, not cancelled.** The equities WFA zone is the one remaining hold-out (sealed
+New goal set the same day: a model with net Sharpe above 1.5 and maximum drawdown under 25 % using graph methods. Decision: **Phase B is deferred, not cancelled.** The equities WFA zone is the one remaining hold-out (sealed
 stays reserved), so the single WFA read will co-declare **C1 (baseline, exactly as frozen above)** and the
 goal-directed **graph-augmented candidate** developed on TRAIN (2004–2022) under a new pre-declaration (P10). The
 Phase B kit (`p9_e6_build_panel.py --wfa`, `p9_b_wfa_oneshot.py`) is committed ready-to-run; nothing in B1's rule

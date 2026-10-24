@@ -14,3 +14,5 @@ results/p12_cache/
 paper/tables/
 paper/figures/
 paper/main.pdf
+.ruff_cache/
+.pytest_cache/

@@ -13,7 +13,7 @@ here.
   features, date_id 0..179 (2004-01..2018-12). OOS evaluation window 2009–2018 (date_id 59..177), the study-13 window.
   Names per OOS month 1,007–2,153 (median 1,465). Survivor-only; every conclusion is conditional on that.
 * Sealed never read; panel ends 2018-12 (sealed start 2024-07), so trivially clean. Build still loads through
-  `reports/ml_meeting/_train_loader.py`, asserts `max(ts) < 2024-07-01`, and prints `sealed_load_count 0`. No WFA, no
+  `experiments/_train_loader.py`, asserts `max(ts) < 2024-07-01`, and prints `sealed_load_count 0`. No WFA, no
   sealed, no new data, no purchases.
 * Protocol (fixed): **annual refit**, 10 refits, OOS years 2009–2018. Study-13 split: validation = last 12 months of the
   training block, 1-month fit/validation gap, embargo 1 month between train end and the OOS entry. Reuse
@@ -106,7 +106,7 @@ be ruled out." Do **not** place a detectable-IC number beside the realised IC wi
 
 ## Outputs
 
-`reports/ml_meeting/P9_ML_CAPACITY.md` + `p9_*.json` + figures `figures/p9_leakage.png`, `p9_learning_curve.png`,
-`p9_capacity_sweep.png`, `p9_ic_mde.png`. Build script `reports/ml_meeting/p9_ml_capacity.py` (driven off
+`results/p9_*.json` + figures `figures/p9_leakage.png`, `p9_learning_curve.png`,
+`p9_capacity_sweep.png`, `p9_ic_mde.png`. Build script `experiments/p9_ml_capacity.py` (driven off
 `equity_ml` + `equity_ml_grid`; torch in loky workers as in study 13). Compute ~8–12 h; drop-if-time order and minimal
 credible subset per `REDTEAM_P9.md`.

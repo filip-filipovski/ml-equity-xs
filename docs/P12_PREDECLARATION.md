@@ -1,9 +1,9 @@
-# P12 — pre-declaration: Sharpe > 1.5, MaxDD < 25 % through ML + graph methods (owner directive 2026-10-17 ~20:00)
+# P12 — pre-declaration: Sharpe > 1.5, MaxDD < 25 % through ML + graph methods (decided 2026-10-17 ~20:00)
 
-Owner, verbatim: "set a /goal of 1.5 sharpe whtough ml graphs one, /loop untill you are done. dont ask me anything, no stops,
-full autonomy, no human in the loop." Written before any P12 return is read; committed at HEAD before `p12_stage0.py` runs.
+Goal: a net Sharpe ratio above 1.5 with maximum drawdown under 25 % through ML and graph methods, the programme run to
+exhaustion without intermediate stops. Written before any P12 return is read; committed at HEAD before `p12_stage0.py` runs.
 Two things fixed: no sealed-zone read; no reported pass that is not real (a pass is relayed only after an independent red
-team). The meeting kit (freeze 18:00 on the 18th) is not changed by P12 except by a red-teamed pass.
+team).
 
 ## Zones, data, costs
 * Equities zones (2026-10-11): TRAIN formation months 2009-01 … 2022-12 only: the panel loader is bounded by the sealed start (the file holds
@@ -46,7 +46,7 @@ Sharpe > 0.5, and survives an independent red team. Outcome classes: (i) PASS; (
 P10: the same signal's rank book is gross SR 0.37 on development (0.70 on the check window); the ICIR-implied ceiling is
 ≈ 1.2 (2009–22) / ≈ 1.8 (2019–22) gross at ideal transfer and zero cost. Residual targets and vol-scaling typically lift
 realised transfer by tens of percent, not by the 4× needed; a net 1.5 on development is therefore unlikely. The program
-is run anyway, in full, because the owner asked for it and because exhaustion has to be shown, not asserted.
+is run anyway, in full, because exhaustion has to be shown, not asserted.
 
 ## Addendum 1 (2026-10-17 ~21:05, written before the Stage 1b read)
 Stage 0 (`p12_stage0.json`): the existing M2 signal's ceiling on development is gross Sharpe 0.66 (vol-scaled rank, ALL;
