@@ -816,6 +816,13 @@ def build_all(selftest_only=False):
     N["VolRatioMedian"] = plain_num(float(np.median(_vr)), 1)
     N["CellsDeeperChkDD"] = str(sum(1 for c in cells if dnet(c, "chk")["maxdd"] < dnet(c, "dev")["maxdd"]))
     N["CellsHigherChkGrossAnn"] = str(sum(1 for c in cells if cells[c]["chk"]["gross_ann"] > cells[c]["dev"]["gross_ann"]))
+    # Weekly-traded full-adjustment cells (R1/R4/R4b, theta=1): development net Sharpe range at 5 bps (FACTCHECK_PAPER_3 #10)
+    _t1 = [c for c in cells if c.endswith("theta1.0") and parse_cell(c)[0] in ("R1", "R4", "R4b")]
+    assert len(_t1) == 9, _t1
+    _t1_5 = [cells[c]["dev"]["net_5bps"]["sharpe"] for c in _t1]
+    assert min(cells[c]["dev"]["net_2bps"]["sharpe"] for c in _t1) > 0, "prose says net-positive at 1--2 bps"
+    N["ThetaOneFiveBpsMin"] = plain_num(min(_t1_5), 2, True)
+    N["ThetaOneFiveBpsMax"] = plain_num(max(_t1_5), 2, True)
     N["PthirteenRefits"] = str(md["refits"]) if md["refits"] is not None else na("PthirteenRefits")
     N["PthirteenMaxAbsDicT"] = plain_num(max_dic_t, 1)
 
