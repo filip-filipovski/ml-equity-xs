@@ -14,7 +14,7 @@ w_j^\star=-\frac{G_j}{H_j+\lambda},
 $G_j,H_j$ the sums over leaf $j$; a split needs $H\ge$ \texttt{min\_child\_weight} in both children, which under squared error ($h_i=1$) means a row count. The fixed booster has depth 3, $\eta=0.05$, 300 rounds, row and column subsampling 0.8, \texttt{min\_child\_weight} 100 and 64-bin histograms, uses the library defaults for $\lambda,\gamma$, and has no grid and no early stopping. The earlier, selected version chose among eight settings with up to 2000 rounds and early stopping on validation IC.
 
 \paragraph{Pairwise rank objective.}
-This variant fits the same trees to the pairwise logistic loss $\sum_{(i,j):\,y_i>y_j}\log(1+e^{-(\hat y_i-\hat y_j)})$ within each date \citep{burges2005}, with eight sampled pairs per row. Its hessians are small, so a \texttt{min\_child\_weight} copied from the squared-error grid forbids every split and returns a constant (Appendix~\ref{app:pitfalls}); the fixed version uses 1.
+This variant fits the same trees to the pairwise logistic loss $\sum_{y_i>y_j}\log(1+e^{-(\hat y_i-\hat y_j)})$ within each date \citep{burges2005}, with eight sampled pairs per row. Its hessians are small, so a \texttt{min\_child\_weight} copied from the squared-error grid forbids every split and returns a constant (Appendix~\ref{app:pitfalls}); the fixed version uses 1.
 
 \paragraph{Feed-forward network (NN3).}
 Following \citet{gkx2020}, with $h^0=x$,
@@ -42,7 +42,7 @@ The ensemble averages the within-date ranks of eq.~\eqref{eq:rank} of its compon
 \end{figure}
 
 \paragraph{Graph networks.}
-Figure~\ref{fig:pipeline} sketches the pipeline. Node input is $x_i\in\R^{67}$ with the 28 rank columns scaled by $\sqrt{12}$ (unit variance for a uniform on $[-\frac12,\frac12]$). The networks have two layers of hidden width 64 and dropout 0.1, and the attention cell uses four heads. A relation $r$ gives, per date, directed edges $j\to i$ with weight $w^r_{ij}$ over the firms present; $N_r(i)$ is the set of sources into $i$. There are seven cells.
+Node input is $x_i\in\R^{67}$ with the 28 rank columns scaled by $\sqrt{12}$ (unit variance for a uniform on $[-\frac12,\frac12]$). The networks have two layers of hidden width 64 and dropout 0.1, and the attention cell uses four heads. A relation $r$ gives, per date, directed edges $j\to i$ with weight $w^r_{ij}$ over the firms present; $N_r(i)$ is the set of sources into $i$, and the seven cells below differ in the relations they use and in how messages are aggregated.
 \begin{description}[style=nextline,leftmargin=1.5em]
 \item[C0, MLP (baseline).] $h^{(l)}=\mathrm{Drop}(\mathrm{ReLU}(W_lh^{(l-1)}+b_l))$, $l=1,2$; $\hat y_i=w^\top h^{(2)}+b$. It uses the same features, training loop, epochs and seeds as every graph cell.
 \item[C0g, aggregates.] The same MLP on $[x_i,\ \{\bar x^r_i\}_{r=1}^4,\ \{\log(1+\deg_r(i))\}_{r=1}^4]\in\R^{339}$, $\bar x^r_i$ the weighted neighbour mean of eq.~\eqref{eq:sage}, so graph information enters as fixed features.

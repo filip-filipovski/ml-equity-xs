@@ -338,14 +338,14 @@ def build_all(selftest_only=False):
     hz = {"W": "weekly", "M": "monthly", "Q": "quarterly"}
     for h in "WMQ":
         r = refit[h]
-        rows.append([r"dev 2009-2018", hz[h], "fixed booster (P12c)",
+        rows.append([r"dev 2009-2018", hz[h], "fixed booster (grid panels)",
                      tex_num(r["ic_dev_mean"], 3, True), tex_num(r["ic_dev_t"], 1), str(r["n_dev_periods"])])
-        rows.append([r"check 2019-2022", hz[h], "fixed booster (P12c)",
+        rows.append([r"check 2019-2022", hz[h], "fixed booster (grid panels)",
                      tex_num(r["ic_chk_mean"], 3, True), tex_num(r["ic_chk_t"], 1), str(r["n_chk_periods"])])
     rows.append("MID")
-    for lab, key, nm in (("booster", "M2", "fixed booster (E6)"), ("ridge control", "M1", "ridge-all control (E6)")):
+    for lab, key, nm in (("booster", "M2", "fixed booster (first read)"), ("ridge control", "M1", "ridge-all control (first read)")):
         s = e6[key]["stats_all"]
-        rows.append([r"E6 2019-2022", "monthly", nm, tex_num(s["mean"], 3, True),
+        rows.append([r"first read 2019-2022", "monthly", nm, tex_num(s["mean"], 3, True),
                      tex_num(s["t_month_iid"], 1), str(s["n_months"])])
     rows.append("MID")
     for key, nm in (("C1", "booster (hold-out)"), ("C0", "ridge-all control (hold-out)")):
@@ -569,7 +569,7 @@ def build_all(selftest_only=False):
         if r["bold"]:
             nm = f"\\textbf{{{esc(nm)}}}"
         elif r["cell"].startswith("P12c"):
-            nm = "P12c (ref.)"
+            nm = "booster (ref.)"
         else:
             nm = esc(nm)
         rows.append([nm, r["eligible"], pretty_cell(r["book"]) if r["book"] else "pending",
