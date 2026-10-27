@@ -66,6 +66,8 @@ beyond counts and schema.
 
 from __future__ import annotations
 
+import os
+
 import gzip
 import hashlib
 import json
