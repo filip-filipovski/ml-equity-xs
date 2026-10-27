@@ -95,7 +95,10 @@ USER_AGENT: Final[str] = "EquityXS/1.0 (non-commercial academic research)"
 # Declared-contact User-Agent for EVERY request to any sec.gov host (www.sec.gov,
 # data.sec.gov, ...). Authorised by the author 2026-10-11: the e-mail is used only in
 # this header (SEC fair-access policy), never sent anywhere else. Single source of truth.
-SEC_USER_AGENT: Final[str] = "eqxs-research/1.0 (Filip F; fikas007@gmail.com)"
+SEC_USER_AGENT: Final[str] = os.environ.get(
+    "EQXS_SEC_USER_AGENT",
+    "eqxs-research/1.0 (set EQXS_SEC_USER_AGENT to your name and e-mail)",
+)
 
 
 def is_sec_host(url_or_host: str) -> bool:

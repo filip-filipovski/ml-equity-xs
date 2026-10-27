@@ -15,7 +15,7 @@ It reports that they do not, and quantifies what would be required.
 * Kenneth French daily factors; FRED DGS3MO (risk-free rate)
 * BEA input-output use tables with SIC -> NAICS -> BEA crosswalks (E5 graph edges)
 
-SEC requests carry a declared-contact User-Agent (`SEC_USER_AGENT` in `src/eqxs/equities_xs.py`).
+SEC requests carry a declared-contact User-Agent (`SEC_USER_AGENT` in `src/eqxs/equities_xs.py`). Set `EQXS_SEC_USER_AGENT` to `<project> (<name>; <e-mail>)` before running any ingest, as SEC's fair-access policy requires.
 ## Data zones
 
 `config/data_zones_equities.yaml` defines three zones: TRAIN 2004-01-01 to 2023-01-01, a walk-forward

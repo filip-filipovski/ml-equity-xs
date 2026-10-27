@@ -18,7 +18,7 @@ from eqxs import equities_xs as xs
 
 # --------------------------------------------------------------------- HTTP / UA
 def test_sec_user_agent_constant_and_host_routing() -> None:
-    assert xs.SEC_USER_AGENT == "eqxs-research/1.0 (Filip F; fikas007@gmail.com)"
+    assert xs.SEC_USER_AGENT.startswith("eqxs-research/1.0 (")
     for u in ("https://www.sec.gov/files/company_tickers.json",
               "https://data.sec.gov/submissions/CIK0000320193.json",
               "https://efts.sec.gov/x", "https://sec.gov/"):
